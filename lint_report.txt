@@ -1,0 +1,40 @@
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\common\ScrollReveal.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\layout\Footer.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\layout\Navbar.jsx
+   5:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u             no-unused-vars
+  16:12  error  'scrolled' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\sections\CapabilityStrip.jsx
+  3:7  error  'capabilities' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\sections\Dashboard.jsx
+   2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  48:30  error  'Icon' is defined but never used                                               no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\sections\Features.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  6:48  error  'Icon' is defined but never used                                               no-unused-vars
+  6:70  error  'colSpan' is assigned a value but never used                                   no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Auth\Login.jsx
+  3:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Auth\Signup.jsx
+  3:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Contact.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Product.jsx
+  1:17  error  'useRef' is defined but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  2:18  error  'useScroll' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  2:43  error  'useSpring' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+✖ 17 problems (17 errors, 0 warnings)
+

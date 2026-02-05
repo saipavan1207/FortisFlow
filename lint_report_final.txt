@@ -1,0 +1,10 @@
+Warning: React version not specified in eslint-plugin-react settings. See https://github.com/jsx-eslint/eslint-plugin-react#configuration .
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\layout\Navbar.jsx
+  1:27  error  'useEffect' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Auth\LoginPage.jsx
+  47:78  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+✖ 2 problems (2 errors, 0 warnings)
+

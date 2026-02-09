@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Inter+Tight:wght@600;700&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Inter+Tight:wght@600;700&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600&family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Merriweather:wght@300;400;700;900&family=Instrument+Serif:ital@0;1&display=swap');
 
 @theme {
     --color-bg-main: #09090b;
@@ -16,6 +16,25 @@
     --font-body: 'Inter', sans-serif;
     --font-serif: 'Playfair Display', serif;
     --font-brand: 'Inter Tight', sans-serif;
+    --font-bricolage: 'Bricolage Grotesque', sans-serif;
+    --font-merriweather: 'Merriweather', serif;
+    --font-instrument: 'Instrument Serif', serif;
+}
+
+.font-bricolage {
+    font-family: var(--font-bricolage);
+}
+
+.font-merriweather {
+    font-family: var(--font-merriweather);
+}
+
+.font-instrument-serif {
+    font-family: var(--font-instrument);
+}
+
+.font-playfair {
+    font-family: var(--font-serif);
 }
 
 :root {
@@ -29,12 +48,9 @@
 
 body {
     font-family: var(--font-body);
-    background-color: var(--color-bg-main);
+    /* background-color: var(--color-bg-main); REMOVE BG COLOR TO LET UNICORN SHOW IF NEEDED, OR KEEP AS BASE */
+    background: #000;
     color: var(--color-text-primary);
-    /* Subtle grid background */
-    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
     overflow-x: hidden;
 }
 

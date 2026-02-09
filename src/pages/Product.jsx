@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { motion, useTransform, useMotionValue, useAnimation } from 'framer-motion'
+import { motion, useTransform, useMotionValue, useAnimation, animate } from 'framer-motion'
 import Navbar from '../components/layout/Navbar'
 import Button from '../components/common/Button'
 import { Signal, Battery, Shield, Bell, FileText, Sparkles, HelpCircle, LayoutDashboard, User } from 'lucide-react'
@@ -485,7 +485,7 @@ const TrackIncomeCard = () => {
 }
 
 const CinematicRadar = () => {
-    // Parallax & Glow Logic
+    // Interactive Tilt Logic
     const x = useMotionValue(0)
     const y = useMotionValue(0)
     const rotateX = useTransform(y, [-200, 200], [5, -5])
@@ -504,63 +504,68 @@ const CinematicRadar = () => {
         y.set(0)
     }
 
-    // Animation Sequence Controls
-    const controls = useAnimation()
-
-    // Data Points (Normalized 0-100)
-    const dataPoints = [
-        { x: 50, y: 15 }, { x: 80, y: 35 }, { x: 75, y: 75 },
-        { x: 50, y: 85 }, { x: 25, y: 75 }, { x: 20, y: 35 }
-    ]
-    const pathString = `M${dataPoints[0].x} ${dataPoints[0].y} L${dataPoints[1].x} ${dataPoints[1].y} L${dataPoints[2].x} ${dataPoints[2].y} L${dataPoints[3].x} ${dataPoints[3].y} L${dataPoints[4].x} ${dataPoints[4].y} L${dataPoints[5].x} ${dataPoints[5].y} Z`
-
-    // Framework Spokes (Standard Hexagon Angles)
-    // -90deg start (Top)
-    // Angles: -90, -30, 30, 90, 150, 210
-    const spokes = [0, 60, 120, 180, 240, 300].map(deg => {
-        const rad = (deg - 90) * (Math.PI / 180)
-        return {
-            x2: 50 + 45 * Math.cos(rad), // Radius 45
-            y2: 50 + 45 * Math.sin(rad)
-        }
-    })
+    // --- Radar Logic ---
+    // 6 Axes: Spending, Savings, Investments, Goals, Liquidity, Growth
+    const v1 = useMotionValue(60) // Spending
+    const v2 = useMotionValue(45) // Savings
+    const v3 = useMotionValue(70) // Investments
+    const v4 = useMotionValue(50) // Goals
+    const v5 = useMotionValue(30) // Liquidity
+    const v6 = useMotionValue(55) // Growth
 
     useEffect(() => {
-        let isMounted = true;
-
-        const sequence = async () => {
-            if (!isMounted) return
-
-            // 0. RESET
-            await controls.start("hidden")
-            await new Promise(r => setTimeout(r, 500))
-
-            // 1. Stage 1: Framework Reveal (Spokes + Rings)
-            controls.start("revealFramework")
-            await new Promise(r => setTimeout(r, 1200)) // Wait for framework to settle
-
-            // 2. Stage 2: Dots Appearance
-            await controls.start("showDots")
-
-            // 3. Stage 3: Polygon Connection
-            controls.start("drawPoly")
-            await new Promise(r => setTimeout(r, 1000))
-
-            // 4. Stage 4: Fill & Glow
-            await controls.start("showFill")
-
-            // Hold
-            await new Promise(r => setTimeout(r, 4000))
-
-            // Loop
-            await controls.start("fadeOut")
-
-            if (isMounted) sequence()
+        // Randomize animations for each axis to simulate "live" data
+        const animateAxis = (val, base, range) => {
+            const sequence = [
+                base,
+                base + Math.random() * range,
+                base - Math.random() * range,
+                base + Math.random() * (range / 2),
+                base
+            ]
+            animate(val, sequence, {
+                duration: 3 + Math.random() * 2, // variable duration 3-5s
+                repeat: Infinity,
+                ease: "easeInOut",
+                repeatType: "mirror"
+            })
         }
 
-        sequence()
-        return () => { isMounted = false }
-    }, [controls])
+        animateAxis(v1, 65, 20)
+        animateAxis(v2, 50, 15)
+        animateAxis(v3, 75, 20)
+        animateAxis(v4, 55, 15)
+        animateAxis(v5, 40, 10)
+        animateAxis(v6, 60, 20)
+    }, [v1, v2, v3, v4, v5, v6])
+
+    // Transform values into path 'd' attribute
+    const pathD = useTransform([v1, v2, v3, v4, v5, v6], (values) => {
+        const points = values.map((r, i) => {
+            const angle = (i * 60 - 90) * (Math.PI / 180) // -90 to start at top
+            const px = 50 + (r * 0.45) * Math.cos(angle) // max radius 45% (to leave padding)
+            const py = 50 + (r * 0.45) * Math.sin(angle)
+            return `${px},${py}`
+        })
+        return `M ${points[0]} L ${points[1]} L ${points[2]} L ${points[3]} L ${points[4]} L ${points[5]} Z`
+    })
+
+    // Helper to get x/y for a specific index from the MotionValues
+    const useVertex = (index, mv) => {
+        const angle = (index * 60 - 90) * (Math.PI / 180)
+        const x = useTransform(mv, r => 50 + (r * 0.45) * Math.cos(angle))
+        const y = useTransform(mv, r => 50 + (r * 0.45) * Math.sin(angle))
+        return { x, y }
+    }
+
+    const p1 = useVertex(0, v1)
+    const p2 = useVertex(1, v2)
+    const p3 = useVertex(2, v3)
+    const p4 = useVertex(3, v4)
+    const p5 = useVertex(4, v5)
+    const p6 = useVertex(5, v6)
+    const corners = [p1, p2, p3, p4, p5, p6]
+    const labels = ["Spending", "Savings", "Invest", "Goals", "Liquid", "Growth"]
 
     return (
         <motion.div
@@ -568,126 +573,100 @@ const CinematicRadar = () => {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
         >
+            {/* Mouse Follower Glow (Subtle) */}
+            <motion.div
+                className="absolute inset-0 bg-blue-500/10 blur-[80px] rounded-full transition-opacity duration-300 pointer-events-none"
+                style={{ x: useTransform(x, v => v * 0.1), y: useTransform(y, v => v * 0.1) }}
+            />
+
             <motion.div
                 style={{ rotateX, rotateY }}
                 className="relative w-full h-full flex items-center justify-center"
             >
-                {/* Interactive Glow Gradient */}
-                <motion.div
-                    className="absolute inset-0 bg-blue-500/05 blur-[60px] rounded-full transition-opacity duration-300 pointer-events-none"
-                    style={{ x: useTransform(x, v => v * 0.15), y: useTransform(y, v => v * 0.15) }}
-                    animate={{ opacity: [0.1, 0.2, 0.1] }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                />
-
-                {/* --- SVG Layer System --- */}
                 <svg viewBox="0 0 100 100" className="absolute w-full h-full overflow-visible">
                     <defs>
-                        <radialGradient id="radarFill" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.25)" />
-                            <stop offset="90%" stopColor="rgba(59, 130, 246, 0)" />
+                        <radialGradient id="radarOrganicFill" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.3)" />
+                            <stop offset="60%" stopColor="rgba(59, 130, 246, 0.05)" />
+                            <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
                         </radialGradient>
-                        <filter id="neonGlow" height="200%" width="200%" x="-50%" y="-50%">
-                            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
+                        <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="1" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
                         </filter>
                     </defs>
 
-                    {/* --- Layer 1: Geometric Framework (Spokes & Rings) --- */}
-                    <motion.g
-                        variants={{
-                            hidden: { opacity: 0, scale: 0.95 },
-                            revealFramework: { opacity: 1, scale: 1, transition: { duration: 1.5, ease: "easeOut" } },
-                            fadeOut: { opacity: 0, scale: 1.05, transition: { duration: 1 } }
-                        }}
-                        initial="hidden"
-                        animate={controls}
-                    >
+                    {/* --- Layer 1: Background Grid (Faded) --- */}
+                    <g className="opacity-20">
                         {/* Concentric Rings */}
                         {[15, 30, 45].map((r, i) => (
                             <circle
                                 key={`ring-${i}`}
                                 cx="50" cy="50" r={r}
                                 fill="none"
-                                stroke="#94a3b8" // blue-gray-400
-                                strokeWidth="0.2"
-                                strokeDasharray="1 3"
-                                opacity="0.4"
-                            />
-                        ))}
-
-                        {/* Radial Spokes */}
-                        {spokes.map((s, i) => (
-                            <line
-                                key={`spoke-${i}`}
-                                x1="50" y1="50"
-                                x2={s.x2} y2={s.y2}
                                 stroke="#94a3b8"
-                                strokeWidth="0.3"
-                                opacity="0.3"
+                                strokeWidth="0.2"
+                                strokeDasharray="1 2"
                             />
                         ))}
-                    </motion.g>
+                        {/* Spokes */}
+                        {[0, 60, 120, 180, 240, 300].map(deg => {
+                            const rad = (deg - 90) * (Math.PI / 180)
+                            const x2 = 50 + 45 * Math.cos(rad)
+                            const y2 = 50 + 45 * Math.sin(rad)
+                            return <line key={deg} x1="50" y1="50" x2={x2} y2={y2} stroke="#94a3b8" strokeWidth="0.2" />
+                        })}
+                    </g>
 
-                    {/* --- Layer 2: Data Polygon (Lines & Fill) --- */}
-                    <motion.g>
-                        {/* Fill */}
-                        <motion.path
-                            d={pathString}
-                            fill="url(#radarFill)"
-                            variants={{
-                                hidden: { opacity: 0 },
-                                showFill: { opacity: 1, transition: { duration: 1.2 } },
-                                fadeOut: { opacity: 0, transition: { duration: 0.8 } }
-                            }}
-                            initial="hidden"
-                            animate={controls}
-                        />
+                    {/* --- Layer 2: Calculated Organic Shape --- */}
+                    <motion.path
+                        d={pathD}
+                        fill="url(#radarOrganicFill)"
+                        stroke="#3b82f6" // Blue-500
+                        strokeWidth="0.8"
+                        strokeLinejoin="round"
+                        filter="url(#glow-strong)"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                    />
 
-                        {/* Stroke/Lines */}
-                        <motion.path
-                            d={pathString}
-                            fill="none"
-                            stroke="#60a5fa"
-                            strokeWidth="0.6"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            variants={{
-                                hidden: { pathLength: 0, opacity: 0 },
-                                drawPoly: { pathLength: 1, opacity: 1, transition: { duration: 1.8, ease: "easeInOut" } },
-                                fadeOut: { opacity: 0, transition: { duration: 0.8 } }
-                            }}
-                            initial="hidden"
-                            animate={controls}
-                            style={{ filter: "url(#neonGlow)" }}
-                        />
-                    </motion.g>
+                    {/* --- Layer 3: Vertices & Labels --- */}
+                    {corners.map((pos, i) => (
+                        <g key={`vertex-${i}`}>
+                            {/* Vertex Dot */}
+                            <motion.circle
+                                cx={pos.x}
+                                cy={pos.y}
+                                r="1.5"
+                                fill="white"
+                                stroke="#2563eb"
+                                strokeWidth="0.5"
+                            />
 
-                    {/* --- Layer 3: Glowing Nodes (Dots) --- */}
-                    {dataPoints.map((p, i) => (
-                        <motion.circle
-                            key={`dot-${i}`}
-                            cx={p.x}
-                            cy={p.y}
-                            r="1.2"
-                            fill="white"
-                            variants={{
-                                hidden: { scale: 0, opacity: 0 },
-                                showDots: {
-                                    scale: 1, opacity: 1, transition: {
-                                        delay: i * 0.1, // Staggered appearance
-                                        type: "spring", stiffness: 300, damping: 20
-                                    }
-                                },
-                                fadeOut: { opacity: 0, scale: 0, transition: { duration: 0.5 } }
-                            }}
-                            initial="hidden"
-                            animate={controls}
-                        />
+                            {/* Label */}
+                            {(() => {
+                                const angle = (i * 60 - 90) * (Math.PI / 180)
+                                const lx = 50 + 52 * Math.cos(angle)
+                                const ly = 50 + 52 * Math.sin(angle)
+                                return (
+                                    <text
+                                        x={lx}
+                                        y={ly}
+                                        fontSize="3"
+                                        fill="#aaa"
+                                        textAnchor="middle"
+                                        alignmentBaseline="middle"
+                                        className="font-mono uppercase tracking-wider font-semibold"
+                                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                                    >
+                                        {labels[i]}
+                                    </text>
+                                )
+                            })()}
+                        </g>
                     ))}
+
                 </svg>
             </motion.div>
         </motion.div>
@@ -724,16 +703,18 @@ const ProductHero = () => {
                         FortisFlow turns raw transactions into intelligent financial insight. It auto-tracks spending, predicts savings opportunities, and shows your real financial health in real time — without manual spreadsheets or guesswork.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-                        <Button variant="shiny" className="px-8 py-4 text-base shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                            Explore Features <ArrowRight className="w-4 h-4" />
-                        </Button>
-                        <Button variant="secondary" className="px-8 py-4 text-base flex items-center gap-2 group">
-                            <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                                <Play className="w-3 h-3 text-white fill-white" />
-                            </div>
-                            See Live Demo
-                        </Button>
+                    <div className="flex justify-center items-center mt-8 w-full">
+                        <div className="inline-block group relative">
+                            <button className="group inline-flex min-w-[140px] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-105 border border-white/10 text-sm font-medium text-white/80 hover:text-white tracking-tight bg-white/5 backdrop-blur-xl rounded-full py-3 px-5 relative items-center justify-center gap-2 shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-circle h-4 w-4" style={{ strokeWidth: 1.5 }}>
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                                </svg>
+                                <span className="relative">Watch demo</span>
+                                <span aria-hidden="true" className="transition-all duration-300 group-hover:opacity-80 opacity-20 w-[70%] h-[1px] rounded-full absolute bottom-0 left-1/2 -translate-x-1/2" style={{ background: 'linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,1) 50%,rgba(255,255,255,0) 100%)' }}></span>
+                            </button>
+                            <span className="pointer-events-none absolute -bottom-3 left-1/2 z-0 h-6 w-44 -translate-x-1/2 rounded-full opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100" style={{ background: 'radial-gradient(60% 100% at 50% 50%, rgba(139,92,246,.55), rgba(139,92,246,.28) 35%, transparent 70%)', filter: 'blur(10px) saturate(120%)' }} aria-hidden="true"></span>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -826,7 +807,7 @@ const ProductHero = () => {
 
 const Product = () => {
     return (
-        <div className="min-h-screen bg-zinc-950 text-white font-inter selection:bg-blue-500/30">
+        <div className="min-h-screen bg-transparent text-white font-inter selection:bg-blue-500/30">
             <Navbar />
             <main>
                 <ProductHero />
@@ -932,7 +913,13 @@ const Product = () => {
                 </section>
 
                 {/* CORE MODULES SECTION */}
-                <section className="py-24 bg-zinc-900/30 border-y border-white/5 relative">
+                <section className="py-24 relative overflow-hidden">
+                    {/* Background: Deep Navy -> Black Radial w/ Seamless Blend */}
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-950/30 via-zinc-950/80 to-zinc-950 pointer-events-none -z-20"></div>
+
+                    {/* Ambient Glow: Subtle Blue behind the cards */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
                     <div className="container mx-auto px-6">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -964,6 +951,7 @@ const Product = () => {
                                     >
                                         {/* Background Noise */}
                                         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
+                                        <div className="absolute top-0 left-0 w-3/4 h-3/4 bg-gradient-to-br from-blue-900/10 to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none" />
 
 
                                         {/* Header */}

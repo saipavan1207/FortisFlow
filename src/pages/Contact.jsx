@@ -97,7 +97,7 @@ const Contact = () => {
     const headingWords = headingText.split(" ")
 
     return (
-        <div className="min-h-screen w-full bg-[#050507] text-white font-inter selection:bg-blue-500/30 overflow-x-hidden">
+        <div className="min-h-screen w-full bg-transparent text-white font-inter selection:bg-blue-500/30 overflow-x-hidden">
             <Navbar />
 
             {/* BACKGROUND EFFECTS */}

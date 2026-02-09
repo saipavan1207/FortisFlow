@@ -25,7 +25,8 @@ import {
     Send,
     Brain,
     Activity,
-    ShieldCheck
+    ShieldCheck,
+    Target
 } from 'lucide-react'
 
 // --- Mock Data ---
@@ -76,8 +77,10 @@ const Dashboard = () => {
                         <div className="space-y-1">
                             <SidebarItem icon={LayoutDashboard} label="Dashboard" active />
                             <SidebarItem icon={ArrowRightLeft} label="Transactions" />
+                            <SidebarItem icon={CreditCard} label="Cards" />
+                            <SidebarItem icon={Smartphone} label="UPI" />
                             <SidebarItem icon={Wallet} label="Categories" />
-                            <SidebarItem icon={CreditCard} label="Goals" />
+                            <SidebarItem icon={Target} label="Goals" />
                         </div>
                     </div>
 
@@ -97,11 +100,11 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3 py-2 rounded-xl hover:bg-zinc-900/50 cursor-pointer transition-colors">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[1px]">
                             <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs font-bold text-white">
-                                AM
+                                CJ
                             </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">Arthur Morgan</p>
+                            <p className="text-sm font-medium text-white truncate">Carl Johnson</p>
                             <p className="text-xs text-zinc-500 truncate">Pro Plan</p>
                         </div>
                         <Settings className="w-4 h-4 text-zinc-500" />
@@ -228,7 +231,6 @@ const Dashboard = () => {
 
                         {/* Middle Row: Charts & List */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
-                            {/* Main Chart */}
                             {/* Main Chart */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}

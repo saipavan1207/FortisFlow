@@ -32,18 +32,13 @@ const Hero = () => {
                     </p>
                 </ScrollReveal>
 
-                <ScrollReveal width="100%" delay={0.4}>
-                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
-                        <Link to="/signup">
-                            <Button variant="shiny" className="w-full sm:w-auto px-8">
-                                Start free <ArrowRight className="w-4 h-4" />
-                            </Button>
-                        </Link>
-                        <Button variant="secondary" className="w-full sm:w-auto px-8">
-                            View live demo
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center mt-10 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                    <Link to="/product">
+                        <Button variant="shiny" className="px-8 py-4 text-base shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                            Explore features <ArrowRight className="w-4 h-4" />
                         </Button>
-                    </div>
-                </ScrollReveal>
+                    </Link>
+                </div>
 
 
             </div>

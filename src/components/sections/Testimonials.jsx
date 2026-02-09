@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ArrowRight, Twitter, Github, Linkedin } from 'lucide-react';
-import CardSyncAnimation from './CardSyncAnimation';
+
 
 const features = [
     {
@@ -8,28 +8,36 @@ const features = [
         description:
             "Securely link debit/credit cards or UPI accounts to automatically import transactions. No more manual entry — FortisFlow categorizes expenses and income in real time.",
         highlight: "Auto-sync • Smart categorization • User-controlled privacy",
-        img: "/images/card-sync-preview.png"
+        img: "/images/card-speed.png",
+        imageClass: "object-cover",
+        containerDimensions: "w-80 h-80 md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px]"
     },
     {
         title: "Manual or Automated — Your Choice",
         description:
             "Users can switch between automated tracking and manual entry anytime. Full flexibility for people who want control or prefer seamless automation.",
         highlight: "Flexible tracking • Editable entries • Full control",
-        img: "/images/manual-mode-preview.png"
+        img: "/images/manual-mode.png",
+        imageClass: "object-cover",
+        containerDimensions: "w-72 h-[30rem] md:w-[320px] md:h-[560px] lg:w-[360px] lg:h-[640px]"
     },
     {
         title: "Smart Reports & PDF Exports",
         description:
             "Download monthly or yearly financial reports in PDF format with clean summaries and categorized breakdowns for easy sharing and analysis.",
         highlight: "One-click export • Detailed summaries • Professional PDFs",
-        img: "/images/report-preview.png"
+        img: "/images/smart-reports.png",
+        imageClass: "object-cover",
+        containerDimensions: "w-full h-64 md:w-[600px] md:h-[360px] lg:w-[680px] lg:h-[400px]"
     },
     {
         title: "Visual Expense Analytics",
         description:
             "Interactive charts and categorized graphs help users instantly understand spending patterns and financial trends.",
         highlight: "Live graphs • Category insights • Visual clarity",
-        img: "/images/analytics-preview.png"
+        img: "/images/dashboard-analytics.png",
+        imageClass: "object-cover",
+        containerDimensions: "w-full h-64 md:w-[600px] md:h-[360px] lg:w-[680px] lg:h-[400px]"
     }
 ];
 
@@ -92,19 +100,13 @@ const Testimonials = () => {
 
                     {/* Image Section */}
                     <div className="lg:w-[55%] flex min-h-[420px] md:min-h-[520px] w-full relative items-center justify-center z-10">
-                        <div className="z-10 md:w-[420px] md:h-[420px] lg:w-[480px] lg:h-[480px] group cursor-pointer overflow-hidden bg-white/5 w-80 h-80 border-0 rounded-[2.5rem] pt-1 pr-1 pb-1 pl-1 relative shadow-2xl">
-                            {currentIndex === 0 ? (
-                                <div className="w-full h-full">
-                                    <CardSyncAnimation />
-                                </div>
-                            ) : (
-                                <img
-                                    src={current.img}
-                                    alt={current.title}
-                                    className="transform transition-transform duration-700 group-hover:scale-105 w-full h-full object-cover rounded-[2.2rem]"
-                                    style={{ opacity: opacity, transition: 'opacity 300ms ease-in-out' }}
-                                />
-                            )}
+                        <div className={`z-10 group cursor-pointer overflow-hidden bg-white/5 border-0 rounded-[2.5rem] pt-1 pr-1 pb-1 pl-1 relative shadow-2xl transition-all duration-500 ease-in-out ${current.containerDimensions}`}>
+                            <img
+                                src={current.img}
+                                alt={current.title}
+                                className={`transform transition-transform duration-700 group-hover:scale-105 w-full h-full rounded-[2.2rem] ${current.imageClass || 'object-cover'}`}
+                                style={{ opacity: opacity, transition: 'opacity 300ms ease-in-out' }}
+                            />
                         </div>
                     </div>
 

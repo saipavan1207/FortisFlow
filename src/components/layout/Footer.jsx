@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import Logo from '../common/Logo'
 import { Twitter, Github, Linkedin, CheckCircle, ArrowRight } from 'lucide-react'
 
 const Footer = () => {
@@ -17,10 +18,8 @@ const Footer = () => {
                     <div className="lg:col-span-4 space-y-5">
                         {/* Logo - Matches Navbar */}
                         <div className="flex items-center gap-2 group cursor-default opacity-90 hover:opacity-100 transition-opacity">
-                            <div className="w-7 h-7 flex items-center justify-center relative">
-                                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M19 5H5v14h4v-7h6" />
-                                </svg>
+                            <div className="flex items-center justify-center relative">
+                                <Logo className="h-7 text-white" />
                             </div>
                             <span className="text-lg font-bold text-white tracking-tight font-brand group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all duration-300" style={{ transform: 'scaleY(1.03)' }}>FortisFlow</span>
                         </div>

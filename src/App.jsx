@@ -8,6 +8,7 @@ import Contact from './pages/Contact'
 import Footer from './components/layout/Footer'
 import MainLayout from './components/layout/MainLayout'
 import AuthLayout from './components/layout/AuthLayout'
+import UnicornBackground from './components/common/UnicornBackground'
 
 // Landing Page Layout
 const LandingPage = () => (
@@ -23,6 +24,7 @@ const LandingPage = () => (
 function App() {
   return (
     <Router>
+      <UnicornBackground />
       <Routes>
         {/* Main Routes with Unicorn Background */}
         <Route element={<MainLayout />}>

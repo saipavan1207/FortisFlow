@@ -28,6 +28,7 @@ import {
     ShieldCheck,
     Target
 } from 'lucide-react'
+import Logo from '../common/Logo'
 
 // --- Mock Data ---
 const spendingData = [
@@ -60,11 +61,8 @@ const Dashboard = () => {
             <aside className="w-60 h-full flex flex-col border-r border-white/5 bg-zinc-950/50 backdrop-blur-xl hidden md:flex">
                 <div className="h-16 flex items-center px-6 border-b border-white/5">
                     <div className="flex items-center gap-2 text-xl font-bold tracking-tight">
-                        <div className="w-8 h-8 flex items-center justify-center relative">
-                            {/* Stylized 'F' Logo */}
-                            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 5H5v14h4v-7h6" />
-                            </svg>
+                        <div className="flex items-center justify-center relative">
+                            <Logo className="h-7 text-white" />
                         </div>
                         <span className="text-xl font-bold tracking-wide text-white font-manrope">FortisFlow</span>
                     </div>

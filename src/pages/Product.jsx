@@ -4,6 +4,7 @@ import Navbar from '../components/layout/Navbar'
 import Button from '../components/common/Button'
 import { Signal, Battery, Shield, Bell, FileText, Sparkles, HelpCircle, LayoutDashboard, User } from 'lucide-react'
 import { ArrowRight, TrendingUp, AlertCircle, Play, Check, Layers, PieChart, Activity, Wallet, CreditCard, BarChart3, ArrowUpRight, ShoppingBag } from 'lucide-react'
+import Testimonials from '../components/sections/Testimonials'
 
 // --- HERO SECTION COMPONENTS ---
 
@@ -1000,9 +1001,9 @@ const Product = () => {
 
                         </div>
                     </div>
-                </section >
+                </section>
                 {/* ANALYTICS SECTION */}
-                < section className="py-24 relative overflow-hidden" >
+                <section className="py-24 relative overflow-hidden">
                     <div className="container mx-auto px-6">
                         <div className="grid lg:grid-cols-2 gap-16 items-center">
 
@@ -1047,12 +1048,15 @@ const Product = () => {
                             </motion.div>
                         </div>
                     </div>
-                </section >
+                </section>
+
+                {/* TESTIMONIALS SECTION */}
+                <Testimonials />
 
                 {/* CTA / Footer Area Replacement could go here, but fitting to existing sections */}
-                < div className="pb-20" ></div >
-            </main >
-        </div >
+                <div className="pb-20"></div>
+            </main>
+        </div>
     )
 }
 

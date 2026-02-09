@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
+import Logo from '../common/Logo'
 
 import { motion } from 'framer-motion'
 
@@ -30,11 +31,8 @@ const Navbar = () => {
                     transition={{ delay: 1.3, duration: 0.5 }}
                 >
                     <Link to="/" className="flex items-center gap-2 group">
-                        <div className="w-8 h-8 flex items-center justify-center relative">
-                            {/* Stylized 'F' Logo */}
-                            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 5H5v14h4v-7h6" /> {/* A simple bold F shape */}
-                            </svg>
+                        <div className="flex items-center justify-center relative">
+                            <Logo className="h-8 text-white" />
                         </div>
                         <span className="text-lg font-bold tracking-tight text-white font-brand group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all duration-300" style={{ transform: 'scaleY(1.03)' }}>FortisFlow</span>
                     </Link>

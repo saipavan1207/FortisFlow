@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import Navbar from '../../components/layout/Navbar'
 import Button from '../../components/common/Button'
-import { Loader2, Github, User, Mail, Lock, ShieldCheck, Zap, AlertCircle, TrendingUp, Activity, Home, Utensils, ArrowUpRight, Layers, Eye, EyeOff, Check, Phone } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+import { Loader2, User, Mail, ShieldCheck, Activity, AlertCircle, TrendingUp, Home, ArrowUpRight, Layers, Lock, Eye, EyeOff } from 'lucide-react'
 
 // --- VISUALS COMPONENT (RIGHT SIDE) ---
 const LoginVisuals = () => {
@@ -252,12 +253,12 @@ const LoginVisuals = () => {
 const Login = () => {
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
 
-    // Auth Flow State
-    const [authView, setAuthView] = useState('default') // 'default' | 'phone' | 'otp'
-    const [phoneNumber, setPhoneNumber] = useState('')
-    const [countryCode, setCountryCode] = useState('+91')
+    const [authView, setAuthView] = useState('default') // 'default' | 'otp'
+    const [emailOrUsername, setEmailOrUsername] = useState('')
     const [otp, setOtp] = useState(['', '', '', '', '', ''])
     const [timeLeft, setTimeLeft] = useState(60)
     const timerRef = useRef(null)
@@ -274,26 +275,60 @@ const Login = () => {
         return () => clearInterval(timerRef.current)
     }, [authView, timeLeft])
 
-    const handleDefaultSubmit = (e) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setTimeout(() => setIsLoading(false), 2000)
+    const handleGoogleLogin = async () => {
+        if (!supabase) {
+            alert("Supabase is not configured. Please set your credentials in .env");
+            return;
+        }
+        await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: 'http://localhost:5173/dashboard'
+            }
+        })
     }
 
-    const handlePhoneRequest = () => {
-        setAuthView('phone')
-    }
-
-    const handleSendOtp = (e) => {
+    const handleDefaultSubmit = async (e) => {
         e.preventDefault()
+        if (!supabase) {
+            alert("Supabase is not configured. Please set your credentials in .env");
+            return;
+        }
         setIsLoading(true)
-        // Simulate API call
-        setTimeout(() => {
+        setError('')
+
+        try {
+            // User provided logic:
+            // const { data, error } = await supabase.auth.signInWithPassword({
+            //   email,
+            //   password,
+            // })
+            // if (error) { alert(error.message) } else { window.location.href = '/dashboard' }
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: emailOrUsername, // Mapping state variable
+                password
+            });
+
+            if (error) {
+                console.error(error.message);
+                alert(error.message);
+                setError(error.message); // Keep UI sync
+            } else {
+                window.location.href = "/dashboard";
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert('An unexpected error occurred')
+        } finally {
             setIsLoading(false)
-            setAuthView('otp')
-            setTimeLeft(60)
-        }, 1500)
+        }
     }
+
+    // Removed handlePhoneRequest and handleSendOtp for phone
+
+    // Removed Phone Handlers
 
     const handleOtpChange = (index, value) => {
         if (isNaN(value)) return
@@ -316,13 +351,27 @@ const Login = () => {
         }
     }
 
-    const handleVerifyOtp = () => {
+    const handleVerifyOtp = async () => {
         setIsLoading(true)
-        // Simulate Verification
-        setTimeout(() => {
+        setError('')
+
+        const code = otp.join('')
+
+        try {
+            // SIMULATED VERIFICATION
+            console.log("Verifying OTP:", code);
+
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            navigate('/dashboard');
+
+        } catch (err) {
+            console.error(err);
+            setError('Invalid code. Please try again.')
+        } finally {
             setIsLoading(false)
-            navigate('/dashboard')
-        }, 1500)
+        }
     }
 
     const handleResendOtp = () => {
@@ -361,30 +410,16 @@ const Login = () => {
                                     </p>
                                 </div>
 
-                                {/* Auth Buttons */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    {/* Google Button */}
-                                    <button className="h-[50px] rounded-[14px] bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white/[0.08] hover:border-white/[0.16] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition-all duration-300 flex items-center justify-center gap-3 group">
-                                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24">
-                                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                                        </svg>
-                                        <span className="text-white font-medium tracking-[-0.01em]">Google</span>
-                                    </button>
-
-                                    {/* Phone Button (Replaces GitHub) */}
-                                    <button
-                                        onClick={handlePhoneRequest}
-                                        className="h-[50px] rounded-[14px] bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white/[0.08] hover:border-white/[0.16] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition-all duration-300 flex items-center justify-center gap-3 group"
-                                    >
-                                        <div className="w-5 h-5 flex items-center justify-center rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
-                                            <Phone className="w-3 h-3 text-white" />
-                                        </div>
-                                        <span className="text-white font-medium tracking-[-0.01em]">Phone Number</span>
-                                    </button>
-                                </div>
+                                {/* Google Button */}
+                                <button type="button" onClick={handleGoogleLogin} className="h-[50px] w-full rounded-[14px] bg-white/[0.04] border border-white/[0.08] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white/[0.08] hover:border-white/[0.16] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12)] transition-all duration-300 flex items-center justify-center gap-3 group">
+                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                    </svg>
+                                    <span className="text-white font-medium tracking-[-0.01em]">Continue with Google</span>
+                                </button>
 
                                 {/* Divider */}
                                 <div className="relative">
@@ -396,10 +431,18 @@ const Login = () => {
                                     </div>
                                 </div>
 
+                                {/* Error Message */}
+                                {error && (
+                                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-center gap-2 animate-shake">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {error}
+                                    </div>
+                                )}
+
                                 {/* Form */}
                                 <form onSubmit={handleDefaultSubmit} className="space-y-5">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-zinc-400 ml-1 tracking-wide">Email or Username</label>
+                                        <label className="text-xs font-medium text-zinc-400 ml-1 tracking-wide">Email</label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                                 <Mail className="h-5 w-5 text-zinc-500 group-focus-within:text-blue-400 transition-colors duration-300" />
@@ -407,12 +450,15 @@ const Login = () => {
                                             <input
                                                 type="text"
                                                 required
+                                                value={emailOrUsername}
+                                                onChange={(e) => setEmailOrUsername(e.target.value)}
                                                 className="w-full pl-11 pr-5 py-3.5 rounded-xl bg-zinc-900/50 border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all duration-300 text-white placeholder-zinc-600 font-medium text-sm hover:border-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
                                                 placeholder="name@example.com"
                                             />
                                         </div>
                                     </div>
 
+                                    {/* Password Field */}
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-medium text-zinc-400 ml-1 tracking-wide">Password</label>
                                         <div className="relative group">
@@ -422,6 +468,8 @@ const Login = () => {
                                             <input
                                                 type={showPassword ? "text" : "password"}
                                                 required
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
                                                 className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-zinc-900/50 border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all duration-300 text-white placeholder-zinc-600 font-medium text-sm hover:border-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
                                                 placeholder="Enter your password"
                                             />
@@ -436,7 +484,7 @@ const Login = () => {
                                     </div>
 
                                     <Button variant="shiny" className="w-full py-4 rounded-xl mt-4 text-sm font-bold tracking-wide shadow-xl shadow-blue-900/20 hover:shadow-blue-900/40 transition-shadow duration-300" disabled={isLoading}>
-                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
+                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
                                     </Button>
                                 </form>
 
@@ -450,77 +498,15 @@ const Login = () => {
                             </div>
                         )}
 
-                        {/* VIEW: PHONE INPUT */}
-                        {authView === 'phone' && (
-                            <div className="w-full max-w-md space-y-7 animate-fade-up">
-                                {/* Back Button */}
-                                <button onClick={() => setAuthView('default')} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm font-medium mb-4">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                                    Back
-                                </button>
-
-                                {/* Header */}
-                                <div className="text-left space-y-2">
-                                    <h1 className="text-3xl lg:text-4xl font-medium font-serif text-white tracking-[-0.02em]">
-                                        Continue with Phone
-                                    </h1>
-                                    <p className="text-white/[0.72] text-[15px] max-w-sm">
-                                        Enter your phone number to receive a one-time password for secure login.
-                                    </p>
-                                </div>
-
-                                {/* Phone Form */}
-                                <form onSubmit={handleSendOtp} className="space-y-6">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-zinc-400 ml-1 tracking-wide">Phone Number</label>
-                                        <div className="relative flex group">
-                                            {/* Country Code */}
-                                            <div className="relative">
-                                                <select
-                                                    value={countryCode}
-                                                    onChange={(e) => setCountryCode(e.target.value)}
-                                                    className="appearance-none h-[52px] pl-4 pr-10 rounded-l-xl bg-zinc-900/50 border border-white/10 border-r-0 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-white font-medium text-sm cursor-pointer hover:bg-white/[0.02]"
-                                                >
-                                                    <option value="+91">+91</option>
-                                                    <option value="+1">+1</option>
-                                                    <option value="+44">+44</option>
-                                                </select>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500"><path d="m6 9 6 6 6-6" /></svg>
-                                                </div>
-                                            </div>
-
-                                            {/* Number Input */}
-                                            <div className="relative flex-1 group">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                    <Phone className="h-5 w-5 text-zinc-500 group-focus-within:text-blue-400 transition-colors duration-300" />
-                                                </div>
-                                                <input
-                                                    type="tel"
-                                                    required
-                                                    value={phoneNumber}
-                                                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                                                    className="w-full h-[52px] pl-10 pr-5 rounded-r-xl bg-zinc-900/50 border border-white/10 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all text-white placeholder-zinc-600 font-medium text-sm hover:border-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
-                                                    placeholder="98765 43210"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <Button variant="shiny" className="w-full py-4 rounded-xl text-sm font-bold tracking-wide shadow-xl shadow-blue-900/20" disabled={isLoading || phoneNumber.length < 10}>
-                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send OTP"}
-                                    </Button>
-                                </form>
-                            </div>
-                        )}
+                        {/* VIEW: PHONE INPUT REMOVED */}
 
                         {/* VIEW: OTP VERIFICATION */}
                         {authView === 'otp' && (
                             <div className="w-full max-w-md space-y-7 animate-fade-up">
                                 {/* Back Button */}
-                                <button onClick={() => setAuthView('phone')} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm font-medium mb-4">
+                                <button onClick={() => setAuthView('default')} className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors text-sm font-medium mb-4">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                                    Change Number
+                                    Change Email
                                 </button>
 
                                 {/* Header */}
@@ -529,9 +515,17 @@ const Login = () => {
                                         Enter Verification Code
                                     </h1>
                                     <p className="text-white/[0.72] text-[15px] max-w-sm">
-                                        We sent a 6-digit code to <span className="text-white font-semibold">{countryCode} {phoneNumber}</span>.
+                                        We sent a 6-digit code to <span className="text-white font-semibold">{emailOrUsername}</span>.
                                     </p>
                                 </div>
+
+                                {/* Error Message */}
+                                {error && (
+                                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-center gap-2 animate-shake">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {error}
+                                    </div>
+                                )}
 
                                 {/* OTP Inputs */}
                                 <div className="space-y-6">

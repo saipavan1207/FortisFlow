@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
+import { supabase } from './lib/supabase'
 import Navbar from './components/layout/Navbar'
 import Hero from './components/sections/Hero'
 import Login from './pages/Auth/Login'
@@ -9,6 +11,8 @@ import Footer from './components/layout/Footer'
 import MainLayout from './components/layout/MainLayout'
 import AuthLayout from './components/layout/AuthLayout'
 import UnicornBackground from './components/common/UnicornBackground'
+import Dashboard from './components/sections/Dashboard'
+import AuthGuard from './components/layout/AuthGuard'
 
 // Landing Page Layout
 const LandingPage = () => (
@@ -22,6 +26,23 @@ const LandingPage = () => (
 )
 
 function App() {
+  useEffect(() => {
+    if (!supabase) return;
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          // Only redirect if not already there to avoid loose loops (though simple redirect might be fine)
+          if (window.location.pathname !== '/dashboard') {
+            window.location.href = '/dashboard';
+          }
+        }
+      }
+    )
+
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
   return (
     <Router>
       <UnicornBackground />
@@ -38,6 +59,16 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
         </Route>
+
+        {/* Protected Dashboard Route - Made Public for now */}
+        <Route path="/dashboard" element={
+          <AuthGuard>
+            <div className="h-screen w-full bg-[#09090b] text-white font-manrope">
+              <Dashboard />
+            </div>
+          </AuthGuard>
+        }
+        />
       </Routes>
     </Router>
   )

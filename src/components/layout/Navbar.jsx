@@ -52,11 +52,12 @@ const Navbar = () => {
                         Product
                     </NavLink>
                     <NavLink
-                        href="/#solutions"
-                        active={isActive('/', '#solutions')}
+                        to="/solution"
+                        active={location.pathname === '/solution'}
                     >
-                        Solutions
+                        Solution
                     </NavLink>
+
                     <NavLink
                         to="/contact"
                         active={location.pathname === '/contact'}
@@ -92,7 +93,8 @@ const Navbar = () => {
                 <div className="fixed inset-0 z-40 bg-zinc-950 pt-32 px-6 animate-fade-in">
                     <div className="flex flex-col gap-6 text-center text-xl font-medium font-manrope">
                         <Link to="/product" onClick={() => setMobileMenuOpen(false)}>Product</Link>
-                        <a href="#solutions" onClick={() => setMobileMenuOpen(false)}>Solutions</a>
+                        <Link to="/solution" onClick={() => setMobileMenuOpen(false)}>Solution</Link>
+
                         <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
                         <div className="h-px bg-white/10 w-full my-2"></div>
                         <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="bg-white text-black py-3 rounded-full font-bold">

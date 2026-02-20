@@ -9,7 +9,7 @@ import Footer from './components/layout/Footer'
 import MainLayout from './components/layout/MainLayout'
 import AuthLayout from './components/layout/AuthLayout'
 import UnicornBackground from './components/common/UnicornBackground'
-
+import SolutionPage from './pages/SolutionPage'
 // Landing Page Layout
 const LandingPage = () => (
   <div className="min-h-screen bg-transparent text-white selection:bg-blue-500/30">
@@ -31,6 +31,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/product" element={<Product />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/solution" element={<SolutionPage />} />
         </Route>
 
         {/* Auth Routes without Background */}

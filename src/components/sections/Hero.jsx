@@ -53,7 +53,7 @@ const Hero = () => {
                 <div className="rounded-xl border border-white/10 p-2 bg-zinc-900/50 backdrop-blur-sm shadow-2xl relative z-10 transform rotate-x-6 perspective-1000 origin-top">
                     {/* Live Dashboard Component */}
                     <div className="w-full bg-zinc-950 rounded-lg overflow-hidden relative shadow-2xl">
-                        <Dashboard />
+                        <Dashboard isPreview={true} />
                     </div>
                 </div>
             </div>

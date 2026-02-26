@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { motion } from 'framer-motion'
 import {
     LayoutDashboard,
@@ -29,6 +30,7 @@ import {
     Target
 } from 'lucide-react'
 import Logo from '../common/Logo'
+import UserMenu from '../common/UserMenu'
 
 // --- Mock Data ---
 const spendingData = [
@@ -54,7 +56,23 @@ const SidebarItem = ({ icon: Icon, label, active = false }) => (
     </div>
 )
 
-const Dashboard = () => {
+const Dashboard = ({ isPreview = false }) => {
+    useEffect(() => {
+        const checkUser = async () => {
+            // If this is just a preview (Landing Page), don't redirect
+            if (isPreview) return;
+
+            if (!supabase) return;
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                window.location.href = '/login';
+            }
+        };
+
+        checkUser();
+    }, [isPreview]);
+
     return (
         <div className="flex h-screen w-full bg-[#09090b] text-white font-manrope overflow-hidden rounded-2xl border border-zinc-800/50 shadow-2xl">
             {/* --- SIDEBAR --- */}
@@ -94,20 +112,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* User Profile */}
-                <div className="p-6 border-t border-white/5">
-                    <div className="flex items-center gap-3 py-2 rounded-xl hover:bg-zinc-900/50 cursor-pointer transition-colors">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[1px]">
-                            <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs font-bold text-white">
-                                CJ
-                            </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate">Carl Johnson</p>
-                            <p className="text-xs text-zinc-500 truncate">Pro Plan</p>
-                        </div>
-                        <Settings className="w-4 h-4 text-zinc-500" />
-                    </div>
-                </div>
+                <UserMenu isPreview={isPreview} />
             </aside>
 
             {/* --- MAIN CONTENT --- */}

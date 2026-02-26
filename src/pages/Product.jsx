@@ -956,7 +956,7 @@ const Product = () => {
 
 
                                         {/* Header */}
-                                        <div className="mb-6 relative z-10">
+                                        <div className="mb-4 relative z-10">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
                                                     <CreditCard className="w-5 h-5" />
@@ -967,11 +967,10 @@ const Product = () => {
                                             <p className="text-sm text-zinc-400 leading-relaxed max-w-[90%]">Monitor daily spending with AI-grouped categories.</p>
                                         </div>
 
-                                        <div className="mt-6 space-y-3">
+                                        <div className="mt-8 space-y-5">
                                             {[
                                                 { title: 'Whole Foods', time: 'Yesterday', amount: '-₹4,250', icon: ShoppingBag, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
                                                 { title: 'Uber Ride', time: 'Today', amount: '-₹245', icon: Activity, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                                                { title: 'Netflix', time: '2 days ago', amount: '-₹1,299', icon: Layers, color: 'text-red-400', bg: 'bg-red-500/10' },
                                             ].map((item, i) => (
                                                 <div key={i} className="flex items-center justify-between py-2 group/row cursor-default">
                                                     <div className="flex items-center gap-3">
@@ -980,11 +979,11 @@ const Product = () => {
                                                             <item.icon className="w-5 h-5" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-zinc-300 group-hover/row:text-white transition-colors">{item.title}</p>
-                                                            <p className="text-[10px] text-zinc-500 font-medium group-hover/row:text-zinc-400 transition-colors">{item.time}</p>
+                                                            <p className="text-[15px] font-bold text-zinc-200 group-hover/row:text-white transition-colors">{item.title}</p>
+                                                            <p className="text-[11px] text-zinc-500 font-medium group-hover/row:text-zinc-400 transition-colors mt-0.5">{item.time}</p>
                                                         </div>
                                                     </div>
-                                                    <span className="text-sm font-semibold text-zinc-200 group-hover/row:text-white group-hover/row:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-all duration-300">{item.amount}</span>
+                                                    <span className="text-[15px] font-bold text-white group-hover/row:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-all duration-300">{item.amount}</span>
                                                 </div>
                                             ))}
                                         </div>

@@ -12,7 +12,10 @@ import MainLayout from './components/layout/MainLayout'
 import AuthLayout from './components/layout/AuthLayout'
 import UnicornBackground from './components/common/UnicornBackground'
 import Dashboard from './components/sections/Dashboard'
+import Transactions from './pages/Transactions'
+import Cards from './pages/Cards'
 import AuthGuard from './components/layout/AuthGuard'
+import DashboardLayout from './components/layout/DashboardLayout'
 
 // Landing Page Layout
 const LandingPage = () => (
@@ -32,8 +35,9 @@ function App() {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
-          // Only redirect if not already there to avoid loose loops (though simple redirect might be fine)
-          if (window.location.pathname !== '/dashboard') {
+          // Only redirect from auth pages if logged in
+          const authRoutes = ['/login', '/signup'];
+          if (authRoutes.includes(window.location.pathname)) {
             window.location.href = '/dashboard';
           }
         }
@@ -60,15 +64,12 @@ function App() {
           <Route path="/signup" element={<Signup />} />
         </Route>
 
-        {/* Protected Dashboard Route - Made Public for now */}
-        <Route path="/dashboard" element={
-          <AuthGuard>
-            <div className="h-screen w-full bg-[#09090b] text-white font-manrope">
-              <Dashboard />
-            </div>
-          </AuthGuard>
-        }
-        />
+        {/* Protected Dashboard/App Routes */}
+        <Route element={<AuthGuard><DashboardLayout /></AuthGuard>}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/cards" element={<Cards />} />
+        </Route>
       </Routes>
     </Router>
   )

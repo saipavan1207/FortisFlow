@@ -1,86 +1,114 @@
--- 1. Create Profiles Table (Public Profile Data)
-create table profiles (
+-- 1️⃣ PROFILES TABLE
+create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  name text,
-  username text,
   full_name text,
+  email text,
   avatar_url text,
+  currency text default 'INR',
   created_at timestamp with time zone default now()
 );
 
--- 2. Create Transactions Table
-create table transactions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  amount numeric(12, 2) not null,
-  category text,
-  description text,
-  type text check (type in ('income', 'expense')), -- Enforce type
-  date timestamp with time zone default now(),
-  created_at timestamp with time zone default now()
-);
+alter table public.profiles enable row level security;
 
--- 3. Create Budgets Table
-create table budgets (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  category text not null,
-  limit_amount numeric(12, 2) not null,
-  created_at timestamp with time zone default now()
-);
-
--- Enable Row Level Security (RLS)
-alter table profiles enable row level security;
-alter table transactions enable row level security;
-alter table budgets enable row level security;
-
--- Policies for Profiles
--- Users can view their own profile
-create policy "Users can view own profile" on profiles
+create policy "Users can select own profile" on public.profiles
   for select using (auth.uid() = id);
 
--- Users can update their own profile
-create policy "Users can update own profile" on profiles
+create policy "Users can update own profile" on public.profiles
   for update using (auth.uid() = id);
 
--- Trigger to create profile on signup (Optional but recommended)
+
+-- 2️⃣ AUTO PROFILE CREATION TRIGGER
 create or replace function public.handle_new_user()
-returns trigger as $$
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
 begin
-  insert into public.profiles (id, full_name, username)
-  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'username');
+  insert into public.profiles (id, full_name, email)
+  values (
+    new.id,
+    new.raw_user_meta_data->>'full_name',
+    new.email
+  );
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users cascade;
 
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
 
--- Policies for Transactions
--- Users can only see their own transactions
-create policy "Users can view own transactions" on transactions
-  for select using (auth.uid() = user_id);
+-- 3️⃣ TRANSACTIONS TABLE
+create table public.transactions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  amount numeric not null,
+  type text check (type in ('income', 'expense')) not null,
+  category text,
+  title text,
+  description text,
+  transaction_date date default current_date,
+  source text default 'manual',
+  created_at timestamp with time zone default now()
+);
 
--- Users can insert their own transactions
-create policy "Users can insert own transactions" on transactions
-  for insert with check (auth.uid() = user_id);
+alter table public.transactions enable row level security;
 
--- Users can update their own transactions
-create policy "Users can update own transactions" on transactions
-  for update using (auth.uid() = user_id);
+create policy "Users manage own transactions" on public.transactions
+  for all using (auth.uid() = user_id);
 
--- Users can delete their own transactions
-create policy "Users can delete own transactions" on transactions
-  for delete using (auth.uid() = user_id);
+create index idx_transactions_user_id on public.transactions(user_id);
+create index idx_transactions_date on public.transactions(transaction_date);
 
 
--- Policies for Budgets
--- Users can view own budgets
-create policy "Users can view own budgets" on budgets
-  for select using (auth.uid() = user_id);
+-- 4️⃣ GOALS TABLE
+create table public.goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  title text not null,
+  target_amount numeric not null,
+  saved_amount numeric default 0,
+  target_date date,
+  created_at timestamp with time zone default now()
+);
 
--- Users can manage own budgets
-create policy "Users can all own budgets" on budgets
+alter table public.goals enable row level security;
+
+create policy "Users manage own goals" on public.goals
+  for all using (auth.uid() = user_id);
+
+
+-- 5️⃣ LINKED ACCOUNTS TABLE
+create table public.linked_accounts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  provider text not null,
+  account_name text,
+  last_four_digits text,
+  is_active boolean default true,
+  created_at timestamp with time zone default now()
+);
+
+alter table public.linked_accounts enable row level security;
+
+create policy "Users manage own linked accounts" on public.linked_accounts
+  for all using (auth.uid() = user_id);
+
+
+-- 6️⃣ BUDGETS TABLE
+create table public.budgets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  category text not null,
+  monthly_limit numeric not null,
+  month date,
+  created_at timestamp with time zone default now()
+);
+
+alter table public.budgets enable row level security;
+
+create policy "Users manage own budgets" on public.budgets
   for all using (auth.uid() = user_id);

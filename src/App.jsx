@@ -14,6 +14,7 @@ import UnicornBackground from './components/common/UnicornBackground'
 import Dashboard from './components/sections/Dashboard'
 import Transactions from './pages/Transactions'
 import Cards from './pages/Cards'
+import Goals from './pages/Goals'
 import AuthGuard from './components/layout/AuthGuard'
 import DashboardLayout from './components/layout/DashboardLayout'
 
@@ -71,6 +72,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/cards" element={<Cards />} />
+          <Route path="/goals" element={<Goals />} />
         </Route>
       </Routes>
     </Router>

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
-    LayoutDashboard, ArrowRightLeft, CreditCard,
+    LayoutDashboard, ArrowRightLeft,
     Smartphone, Wallet, Target, BarChart3,
     PieChart, Sparkles, LogOut, Settings as SettingsIcon, Bell
 } from 'lucide-react';
@@ -37,8 +37,6 @@ const DashboardLayout = () => {
     const routeTitles = {
         '/dashboard': 'Dashboard',
         '/transactions': 'Transactions',
-        '/cards': 'Cards & UPI',
-        '/categories': 'Categories',
         '/goals': 'Goals',
         '/analytics': 'Analytics',
         '/reports': 'Reports',
@@ -71,8 +69,6 @@ const DashboardLayout = () => {
                         <div className="space-y-1">
                             <SidebarItem icon={LayoutDashboard} label="Dashboard" path="/dashboard" active={isActive('/dashboard')} />
                             <SidebarItem icon={ArrowRightLeft} label="Transactions" path="/transactions" active={isActive('/transactions')} />
-                            <SidebarItem icon={CreditCard} label="Cards & UPI" path="/cards" active={isActive('/cards')} />
-                            <SidebarItem icon={Wallet} label="Categories" path="/categories" active={isActive('/categories')} />
                             <SidebarItem icon={Target} label="Goals" path="/goals" active={isActive('/goals')} />
                         </div>
                     </div>

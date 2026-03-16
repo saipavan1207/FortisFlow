@@ -1,17 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Trash2, Loader2 } from 'lucide-react';
 
-const TransactionRow = ({ transaction }) => {
+const SOURCE_LABELS = {
+    upi: 'UPI',
+    bank: 'Bank Transfer',
+    card: 'Card',
+    sms: 'SMS Import',
+};
+
+const TransactionRow = ({ transaction, onDelete }) => {
+    const [deleting, setDeleting] = useState(false);
     const isIncome = transaction.type === 'income';
+    const accountSource = SOURCE_LABELS[transaction.account_source] || transaction.account_source || 'UPI';
+    const txnDate = transaction.date || transaction.transaction_date;
 
-    // Mock account sources for visual richness if missing
-    const accountSource = transaction.accountSource || (isIncome ? 'UPI — user@okbank' : 'Visa •••• 8721');
+    const handleDelete = async (e) => {
+        e.stopPropagation();
+        if (deleting) return;
+        setDeleting(true);
+        await onDelete?.(transaction.id);
+        setDeleting(false);
+    };
 
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{ opacity: 0, x: -20, height: 0 }}
             className="grid grid-cols-7 px-6 py-4 border-b border-white/[0.02] hover:bg-blue-500/[0.015] transition-all duration-200 ease-out items-center group relative cursor-pointer"
         >
             {/* Subtle row hover glow */}
@@ -19,11 +35,11 @@ const TransactionRow = ({ transaction }) => {
 
             {/* Date */}
             <div className="col-span-1 text-sm text-zinc-400 font-medium z-10">
-                {new Date(transaction.date).toLocaleDateString(undefined, {
+                {txnDate ? new Date(txnDate).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
-                })}
+                }) : '—'}
             </div>
 
             {/* Details / Merchant */}
@@ -35,7 +51,7 @@ const TransactionRow = ({ transaction }) => {
                 </div>
                 <div>
                     <p className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{transaction.merchant || 'Unknown Merchant'}</p>
-                    {transaction.description && <p className="text-xs text-zinc-500 mt-0.5">{transaction.description}</p>}
+                    {transaction.description && <p className="text-xs text-zinc-500 mt-0.5 truncate max-w-[200px]">{transaction.description}</p>}
                 </div>
             </div>
 
@@ -53,8 +69,8 @@ const TransactionRow = ({ transaction }) => {
                 </span>
             </div>
 
-            {/* Status Badge */}
-            <div className="col-span-1 z-10">
+            {/* Status Badge + Delete */}
+            <div className="col-span-1 z-10 flex items-center gap-2">
                 {isIncome ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/[0.05] border border-emerald-500/[0.1] text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
@@ -66,6 +82,19 @@ const TransactionRow = ({ transaction }) => {
                         Debited
                     </span>
                 )}
+
+                {/* Delete button — visible on hover */}
+                <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-zinc-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 disabled:opacity-50"
+                    title="Delete transaction"
+                >
+                    {deleting
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <Trash2 className="w-3.5 h-3.5" />
+                    }
+                </button>
             </div>
 
             {/* Amount */}

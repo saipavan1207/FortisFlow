@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#0a0a0a",
+                        "panel-dark": "#111111",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .metallic-glow {
+            background: radial-gradient(circle at 50% 0%, rgba(19, 127, 236, 0.15) 0%, transparent 70%);
+        }
+    </style>
+<title>Fintech Transaction Dashboard</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-20">
+<!-- Header -->
+<header class="flex items-center bg-background-light/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50 p-4 justify-between border-b border-white/5">
+<div class="flex size-10 shrink-0 items-center overflow-hidden rounded-full border border-white/10">
+<img alt="User Avatar" class="size-full object-cover" data-alt="Close up of a professional user profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6-SPjd8SWVlNf9O-yJQupJhOJ2_Dm-ISLj366WlswqEWosZYU_NhkmV5eoK_4il3xhoZaOhz6LNY3y7pej4bK_iUyJIzsy4pYdU5BvkTzTmCCinfuTIporlyw4nynWxr1Tr2rucT1LRCKi24BQw_sJF9RPdhpcEKs8Cggt1cCsqBmwpbMgbaRumzju7O2iWnbEF5q6H7Ox-h3lAIVvm7meVX4UJbXCUnTXin57hSX1Zumy7Ir5TBmFooriFgCyxC9vY61oT0cSBk"/>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 ml-3">Dashboard</h2>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-white/5 text-slate-900 dark:text-slate-100 transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+</div>
+</header>
+<!-- Summary Cards -->
+<div class="flex flex-col gap-4 p-4 sm:flex-row">
+<!-- Balance Card -->
+<div class="glass-card metallic-glow flex min-w-[158px] flex-1 flex-col gap-4 rounded-2xl p-5 relative overflow-hidden">
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Balance</p>
+<div class="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary shadow-[0_0_15px_rgba(19,127,236,0.3)]">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+</div>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">₹0</p>
+</div>
+<!-- Income Card -->
+<div class="glass-card flex min-w-[158px] flex-1 flex-col gap-4 rounded-2xl p-5 relative overflow-hidden">
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Income</p>
+<div class="flex size-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+<span class="material-symbols-outlined text-[20px]">south_west</span>
+</div>
+</div>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">₹0</p>
+</div>
+<!-- Expenses Card -->
+<div class="glass-card flex min-w-[158px] flex-1 flex-col gap-4 rounded-2xl p-5 relative overflow-hidden">
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Expenses</p>
+<div class="flex size-8 items-center justify-center rounded-lg bg-rose-500/20 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
+<span class="material-symbols-outlined text-[20px]">north_east</span>
+</div>
+</div>
+<p class="text-slate-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">₹0</p>
+</div>
+</div>
+<!-- Search & Filters -->
+<div class="px-4 py-2 space-y-4">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3 bg-slate-200/50 dark:bg-white/5 border-none rounded-xl text-slate-900 dark:text-white placeholder-slate-500 focus:ring-1 focus:ring-primary/50 transition-all" placeholder="Search transactions..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-200/50 dark:bg-white/5 px-4 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-slate-400 material-symbols-outlined text-[18px]">category</span>
+<p class="text-slate-900 dark:text-slate-200 text-xs font-medium">All Types</p>
+<span class="text-slate-500 material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-200/50 dark:bg-white/5 px-4 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-slate-400 material-symbols-outlined text-[18px]">account_balance</span>
+<p class="text-slate-900 dark:text-slate-200 text-xs font-medium">All Accounts</p>
+<span class="text-slate-500 material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-200/50 dark:bg-white/5 px-4 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-slate-400 material-symbols-outlined text-[18px]">label</span>
+<p class="text-slate-900 dark:text-slate-200 text-xs font-medium">Categories</p>
+<span class="text-slate-500 material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-200/50 dark:bg-white/5 px-4 border border-white/5 hover:bg-white/10 transition-colors">
+<span class="text-slate-400 material-symbols-outlined text-[18px]">calendar_today</span>
+<p class="text-slate-900 dark:text-slate-200 text-xs font-medium">Any Time</p>
+<span class="text-slate-500 material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Transactions Panel -->
+<div class="mx-4 mt-2 bg-slate-100 dark:bg-panel-dark rounded-2xl border border-white/5 overflow-hidden flex-1 flex flex-col min-h-[400px]">
+<!-- Header Grid -->
+<div class="grid grid-cols-2 gap-4 px-6 py-4 border-b border-white/5 bg-slate-200/20 dark:bg-white/5">
+<span class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Details / Merchant</span>
+<span class="text-[10px] font-bold tracking-widest text-slate-500 uppercase text-right">Amount</span>
+</div>
+<!-- Empty State -->
+<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+<div class="mb-6 flex size-20 items-center justify-center rounded-2xl bg-slate-200/50 dark:bg-white/5 border border-white/5 shadow-xl shadow-primary/5">
+<span class="material-symbols-outlined text-[40px] text-primary/40">credit_card</span>
+</div>
+<h3 class="text-slate-900 dark:text-white text-xl font-bold mb-2">No transactions yet</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm max-w-[240px] leading-relaxed">
+                    Your financial history will appear here once you make your first transaction.
+                </p>
+<button class="mt-8 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20">
+                    Add Transaction
+                </button>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 dark:border-white/5 bg-slate-100/80 dark:bg-panel-dark/80 backdrop-blur-xl px-4 pb-6 pt-2">
+<div class="flex items-center justify-around max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Home</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">swap_horiz</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Transactions</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">credit_card</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Cards</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<p class="text-[10px] font-semibold uppercase tracking-wider">Profile</p>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

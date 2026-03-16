@@ -10,7 +10,8 @@ const TransactionsTable = ({
     transactions,
     currentPage,
     totalPages,
-    onPageChange
+    onPageChange,
+    onDelete
 }) => {
     return (
         <div className="flex-1 bg-[#0f0f11]/60 backdrop-blur-2xl border border-white/[0.04] shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-[20px] overflow-hidden flex flex-col relative min-h-[400px]">
@@ -33,7 +34,7 @@ const TransactionsTable = ({
                     </div>
                 ) : transactions.length > 0 ? (
                     transactions.map((t) => (
-                        <TransactionRow key={t.id} transaction={t} />
+                        <TransactionRow key={t.id} transaction={t} onDelete={onDelete} />
                     ))
                 ) : (
                     <EmptyState

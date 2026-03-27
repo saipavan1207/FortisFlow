@@ -6,16 +6,17 @@ import {
     Building2, Sparkles, AlertCircle, TrendingUp,
     TrendingDown, BarChart3
 } from 'lucide-react';
-import { parseSmsMessages } from '../utils/parseSms';
+import { parseSmsMessages } from '../lib/smsParser';
 import { bulkAddTransactions } from '../services/transactions';
 
 const BANKS = [
-    { id: 'hdfc', label: 'HDFC Bank' },
-    { id: 'icici', label: 'ICICI Bank' },
-    { id: 'sbi', label: 'SBI' },
-    { id: 'axis', label: 'Axis Bank' },
-    { id: 'kotak', label: 'Kotak Mahindra' },
-    { id: 'other', label: 'Other' },
+    { id: 'HDFC', label: 'HDFC Bank' },
+    { id: 'ICICI', label: 'ICICI Bank' },
+    { id: 'SBI', label: 'SBI' },
+    { id: 'Axis', label: 'Axis Bank' },
+    { id: 'Kotak', label: 'Kotak Mahindra' },
+    { id: 'UPI', label: 'UPI' },
+    { id: 'Other', label: 'Other' },
 ];
 
 const CATEGORIES = [
@@ -23,22 +24,55 @@ const CATEGORIES = [
     'Subscriptions', 'Entertainment', 'Health', 'Travel', 'Other'
 ];
 
-const EXAMPLE_SMS = `Rs. 450.00 debited from A/C XXXX1234 via UPI to SWIGGY on 12 Mar 24. Avl Bal Rs. 5,340.00
+const EXAMPLE_SMS = `Rs. 45,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Oct 23. Avl Bal Rs. 55,000.00
 
-Rs. 25,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Mar 24. Avl Bal Rs. 30,340.00
+Rs. 1,200.00 spent on HDFC Card ending 5678 at AMAZON on 05 Oct 23.
 
-Rs. 1,200.00 spent on HDFC Card ending 5678 at AMAZON on 10 Mar 24.
+Rs. 450.00 debited from A/C XXXX1234 via UPI to SWIGGY on 12 Oct 23. Avl Bal Rs. 53,350.00
 
-Rs.150 debited from A/C XXXX via UPI to Uber on 08 Mar 24. Avl Bal Rs. 4,190.00
+Rs. 45,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Nov 23. Avl Bal Rs. 60,000.00
 
-Rs. 599.00 debited from A/C XXXX via UPI to Netflix on 05 Mar 24. Avl Bal Rs. 3,591.00`;
+Rs. 2,000.00 debited from A/C XXXX1234 via UPI to ZOMATO on 08 Nov 23. Avl Bal Rs. 58,000.00
+
+Rs. 3,500.00 spent on HDFC Card ending 5678 at FLIPKART on 18 Nov 23.
+
+Rs. 45,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Dec 23. Avl Bal Rs. 62,000.00
+
+Rs. 1,800.00 debited via UPI to OLA on 10 Dec 23. Avl Bal Rs. 60,200.00
+
+Rs. 2,200.00 spent on HDFC Card ending 5678 at BIGBASKET on 15 Dec 23.
+
+Rs. 45,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Jan 24. Avl Bal Rs. 65,000.00
+
+Rs. 1,500.00 debited via UPI to SWIGGY on 07 Jan 24. Avl Bal Rs. 63,500.00
+
+Rs. 4,000.00 spent on HDFC Card ending 5678 at RELIANCE DIGITAL on 20 Jan 24.
+
+Rs. 45,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Feb 24. Avl Bal Rs. 68,000.00
+
+Rs. 2,500.00 debited via UPI to ZOMATO on 09 Feb 24. Avl Bal Rs. 65,500.00
+
+Rs. 3,000.00 spent on HDFC Card ending 5678 at MAKEMYTRIP on 18 Feb 24.
+
+Rs. 4,500.00 spent on HDFC Card ending 5678 at APPLE STORE on 24 Feb 24.
+
+Rs. 1,200.00 debited via UPI to UBER on 28 Feb 24.
+
+Rs. 45,000.00 credited to A/C XXXX1234 by NEFT from SALARY on 01 Mar 24. Avl Bal Rs. 70,000.00
+
+Rs. 1,200.00 debited via UPI to SWIGGY on 10 Mar 24. Avl Bal Rs. 68,800.00
+
+Rs. 5,000.00 spent on HDFC Card ending 5678 at AMAZON on 15 Mar 24.
+
+Rs. 8,000.00 spent on HDFC Card ending 5678 at INDIGO AIRLINES on 20 Mar 24.
+
+Rs. 3,000.00 debited via UPI to ZARA on 25 Mar 24.`;
 
 // ── Stepper ──────────────────────────────────────────
 const StepIndicator = ({ currentStep }) => {
     const steps = [
         { num: 1, label: 'Paste SMS' },
-        { num: 2, label: 'Bank' },
-        { num: 3, label: 'Preview' },
+        { num: 2, label: 'Preview' },
     ];
 
     return (
@@ -127,7 +161,6 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
     const resetModal = useCallback(() => {
         setStep(1);
         setSmsText('');
-        setBank('hdfc');
         setParsedTransactions([]);
         setParsing(false);
         setImporting(false);
@@ -148,12 +181,12 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
             return;
         }
         setError(null);
-        setStep(prev => Math.min(prev + 1, 3));
+        setStep(prev => Math.min(prev + 1, 2));
     };
 
     const handlePrevStep = () => {
         setError(null);
-        if (step === 3) {
+        if (step === 2) {
             setParseComplete(false);
             setParsedTransactions([]);
         }
@@ -189,6 +222,12 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
         );
     };
 
+    const handleAccountChange = (id, newAccount) => {
+        setParsedTransactions(prev =>
+            prev.map(t => t.id === id ? { ...t, account_source: newAccount } : t)
+        );
+    };
+
     const handleRemoveTransaction = (id) => {
         setParsedTransactions(prev => prev.filter(t => t.id !== id));
     };
@@ -208,7 +247,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                 category: txn.category,
                 date: txn.date,
                 description: `SMS Import: ${txn.originalSms?.substring(0, 100) || ''}`,
-                source: 'sms',
+                source: txn.account_source || 'sms',
             }));
 
             const { error: apiError, count } = await bulkAddTransactions(txnsToInsert);
@@ -330,46 +369,8 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                                 </motion.div>
                             )}
 
-                            {/* ━━ STEP 2: Choose Bank ━━ */}
+                            {/* ━━ STEP 2: Parse & Preview ━━ */}
                             {step === 2 && (
-                                <motion.div
-                                    key="step2"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 20 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-3">
-                                        Select Your Bank
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {BANKS.map(b => (
-                                            <button
-                                                key={b.id}
-                                                type="button"
-                                                onClick={() => setBank(b.id)}
-                                                className={`
-                                                    flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-200 text-left
-                                                    ${bank === b.id
-                                                        ? 'bg-orange-500/10 border-orange-500/30 text-white shadow-[0_0_16px_-4px_rgba(234,88,12,0.2)]'
-                                                        : 'bg-zinc-900/30 border-white/[0.04] text-zinc-400 hover:border-white/[0.08] hover:text-zinc-300'
-                                                    }
-                                                `}
-                                            >
-                                                <Building2 className={`w-4 h-4 ${bank === b.id ? 'text-orange-400' : 'text-zinc-600'}`} />
-                                                <span className="text-sm font-medium">{b.label}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    <p className="mt-4 text-[11px] text-zinc-600">
-                                        Selecting your bank helps improve parsing accuracy for bank-specific formats.
-                                    </p>
-                                </motion.div>
-                            )}
-
-                            {/* ━━ STEP 3: Parse & Preview ━━ */}
-                            {step === 3 && (
                                 <motion.div
                                     key="step3"
                                     initial={{ opacity: 0, x: -20 }}
@@ -431,6 +432,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                                                             <th className="px-3 py-2.5 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Merchant</th>
                                                             <th className="px-3 py-2.5 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Amount</th>
                                                             <th className="px-3 py-2.5 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Type</th>
+                                                            <th className="px-3 py-2.5 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Account</th>
                                                             <th className="px-3 py-2.5 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Category</th>
                                                             <th className="px-2 py-2.5 w-6"></th>
                                                         </tr>
@@ -467,6 +469,17 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                                                                         }
                                                                         {txn.type}
                                                                     </span>
+                                                                </td>
+                                                                <td className="px-3 py-2.5">
+                                                                    <select
+                                                                        value={txn.account_source || 'Other'}
+                                                                        onChange={e => handleAccountChange(txn.id, e.target.value)}
+                                                                        className="bg-zinc-800/50 border border-white/[0.06] rounded-md px-2 py-1 text-[11px] text-zinc-300 outline-none cursor-pointer appearance-none hover:border-white/[0.1] transition-colors"
+                                                                    >
+                                                                        {BANKS.map(b => (
+                                                                            <option key={b.id} value={b.id} className="bg-zinc-900">{b.label}</option>
+                                                                        ))}
+                                                                    </select>
                                                                 </td>
                                                                 <td className="px-3 py-2.5">
                                                                     <select
@@ -549,7 +562,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                         </button>
 
                         <div className="flex items-center gap-2">
-                            {step < 3 && (
+                            {step < 2 && (
                                 <button
                                     type="button"
                                     onClick={handleNextStep}
@@ -560,7 +573,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                                 </button>
                             )}
 
-                            {step === 3 && parseComplete && parsedTransactions.length > 0 && (
+                            {step === 2 && parseComplete && parsedTransactions.length > 0 && (
                                 <button
                                     type="button"
                                     onClick={handleImport}

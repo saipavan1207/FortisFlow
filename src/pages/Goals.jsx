@@ -57,26 +57,46 @@ const Goals = () => {
     };
 
     return (
-        <div className="p-6 md:p-8 space-y-8 h-full flex flex-col font-manrope overflow-y-auto custom-scrollbar relative">
+        <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.08 }
+                }
+            }}
+            className="p-6 md:p-8 space-y-8 h-full flex flex-col font-manrope overflow-y-auto custom-scrollbar relative"
+        >
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <motion.div 
+                variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}
+                className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
                 <div>
                     <h1 className="text-3xl font-extrabold text-white tracking-tight">Goals</h1>
                     <p className="text-zinc-400 text-sm mt-1">Track and achieve your financial aspirations.</p>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Top Section */}
-            <GoalsOverview stats={stats} />
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <GoalsOverview stats={stats} />
+            </motion.div>
 
             {/* Middle Section */}
-            <GoalCardsGrid 
-                goals={goals} 
-                onAddNew={() => setIsPlannerOpen(true)} 
-            />
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <GoalCardsGrid 
+                    goals={goals} 
+                    onAddNew={() => setIsPlannerOpen(true)} 
+                />
+            </motion.div>
 
             {/* Bottom Section */}
-            <AiInsightsProjection insightText={aiInsight} />
+            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                <AiInsightsProjection insightText={aiInsight} />
+            </motion.div>
 
             {/* Modal */}
             <GoalPlannerModal 
@@ -84,7 +104,7 @@ const Goals = () => {
                 onClose={() => setIsPlannerOpen(false)}
                 onSave={handleAddGoal}
             />
-        </div>
+        </motion.div>
     );
 };
 

@@ -1,18 +1,10 @@
-/**
- * SMS Transaction Parser
- * Extracts transaction data from Indian bank SMS messages.
- */
-import { categorizeMerchant } from './categorizeMerchant';
+import { detectCategory } from './categoryDetector';
+import { detectBank } from './bankDetector';
 
-// Common Indian bank SMS patterns
 const DEBIT_PATTERNS = [
-    // "Rs. 450 debited from A/C XXXX via UPI to Swiggy on 12 Mar"
     /(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*)\s*(?:has been |is |was )?(?:debited|spent|withdrawn|paid)/i,
-    // "You've spent Rs 123 at Merchant"
     /(?:spent|paid|debited)\s*(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*)/i,
-    // "Transaction of Rs 500 done"
     /(?:transaction|txn|purchase)\s*(?:of\s*)?(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*)/i,
-    // "HDFC: Rs 1,200.00 debited"
     /(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*).*?(?:debited|withdrawn|spent)/i,
 ];
 
@@ -49,8 +41,6 @@ function parseDate(sms) {
         const match = sms.match(pattern);
         if (match) {
             let dateStr = match[1].trim();
-
-            // Try "12 Mar 2024" or "12-Mar-24" format
             const namedMonth = dateStr.match(/(\d{1,2})[\s/-](\w{3})\w*[\s/-]?(\d{0,4})/i);
             if (namedMonth) {
                 const day = namedMonth[1].padStart(2, '0');
@@ -62,7 +52,6 @@ function parseDate(sms) {
                 return `${year}-${month}-${day}`;
             }
 
-            // Try numeric dd/mm/yyyy
             const numDate = dateStr.match(/(\d{1,2})[\s/-](\d{1,2})[\s/-](\d{2,4})/);
             if (numDate) {
                 const day = numDate[1].padStart(2, '0');
@@ -73,7 +62,7 @@ function parseDate(sms) {
             }
         }
     }
-    return new Date().toISOString().split('T')[0]; // fallback to today
+    return new Date().toISOString().split('T')[0];
 }
 
 function extractMerchant(sms) {
@@ -81,7 +70,6 @@ function extractMerchant(sms) {
         const match = sms.match(pattern);
         if (match) {
             let merchant = match[1].trim();
-            // Clean up common suffixes
             merchant = merchant.replace(/\s*(ref|avl|bal|upi|a\/c|ac\b).*/i, '').trim();
             if (merchant.length > 2) return merchant;
         }
@@ -89,16 +77,12 @@ function extractMerchant(sms) {
     return 'Unknown';
 }
 
-/**
- * Parse a single SMS message into a transaction object.
- */
 function parseSingleSms(sms) {
     if (!sms || sms.trim().length < 10) return null;
 
     let amount = 0;
     let type = 'expense';
 
-    // Check credit patterns first
     for (const pattern of CREDIT_PATTERNS) {
         const match = sms.match(pattern);
         if (match) {
@@ -108,7 +92,6 @@ function parseSingleSms(sms) {
         }
     }
 
-    // If no credit match, check debit
     if (amount === 0) {
         for (const pattern of DEBIT_PATTERNS) {
             const match = sms.match(pattern);
@@ -120,13 +103,15 @@ function parseSingleSms(sms) {
         }
     }
 
-    if (amount === 0) return null; // Not a transaction SMS
+    if (amount === 0) return null;
 
     const merchant = extractMerchant(sms);
     const date = parseDate(sms);
+    const account_source = detectBank(sms);
+    
     let category;
     try {
-        category = categorizeMerchant(merchant);
+        category = detectCategory(merchant);
     } catch {
         category = 'Other';
     }
@@ -138,18 +123,14 @@ function parseSingleSms(sms) {
         merchant,
         date,
         category,
+        account_source, // Matching the schema requirements
         originalSms: sms.trim(),
     };
 }
 
-/**
- * Parse multiple SMS messages (separated by newlines).
- * Returns an array of parsed transaction objects.
- */
 export function parseSmsMessages(rawText) {
     if (!rawText || !rawText.trim()) return [];
 
-    // Split by double newlines or by lines that look like separate messages
     const messages = rawText
         .split(/\n\s*\n|\n(?=[A-Z]{2,}[-:])|(?<=\.)\s*\n/)
         .map(m => m.trim())
@@ -164,5 +145,3 @@ export function parseSmsMessages(rawText) {
     }
     return transactions;
 }
-
-export default parseSmsMessages;

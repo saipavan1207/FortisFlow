@@ -135,7 +135,6 @@ const FiltersBar = ({ searchTerm, setSearchTerm, filters = DEFAULT_FILTERS, setF
                             { value: 'upi', label: 'UPI' },
                             { value: 'bank', label: 'Bank Transfer' },
                             { value: 'card', label: 'Card' },
-                            { value: 'sms', label: 'SMS Import' },
                         ]}
                     />
                     <FilterDropdown

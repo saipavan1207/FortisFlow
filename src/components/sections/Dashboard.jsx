@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import {
     LayoutDashboard,
     CreditCard,
@@ -30,6 +31,7 @@ import {
     Loader2
 } from 'lucide-react'
 import { useDashboardData } from '../../hooks/useDashboardData'
+import { getSafePercentageChange } from '../../utils/formatters'
 
 const spendingData = [
     { month: 'Jan', amount: 4500, active: false },
@@ -40,11 +42,42 @@ const spendingData = [
     { month: 'Jun', amount: 5900, active: false },
 ]
 
+const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        return (
+            <div className="bg-[#12141c]/90 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-md">
+                <p className="text-white font-bold mb-3">{label} Insights</p>
+                {payload.map((entry, index) => (
+                    <div key={index} className="flex items-center justify-between gap-4 mb-2 shadow-sm rounded-md mix-blend-screen bg-black/20 p-2 border border-white/5">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                            <span className="text-zinc-400 font-semibold text-xs tracking-wide">{entry.name}</span>
+                        </div>
+                        <span className="text-white font-extrabold text-sm drop-shadow-md">₹{entry.value.toLocaleString()}</span>
+                    </div>
+                ))}
+                {data.changeInfo?.trend !== 'neutral' && (
+                    <div className={`mt-3 pt-3 border-t border-white/10 text-xs font-bold ${data.changeInfo.trend === 'up' ? 'text-rose-400' : 'text-emerald-400'} flex items-center gap-1.5`}>
+                        {data.changeInfo.trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                        {data.changeInfo.uiLabel}
+                    </div>
+                )}
+                {data.changeInfo?.trend === 'neutral' && (
+                    <div className="mt-3 pt-3 border-t border-white/10 text-xs font-bold text-zinc-400 flex items-center gap-1.5">
+                        <Activity className="w-3.5 h-3.5" />
+                        {data.changeInfo.uiLabel}
+                    </div>
+                )}
+            </div>
+        );
+    }
+    return null;
+};
+
 const Dashboard = ({ isPreview = false }) => {
-    // 1. Fetch Data Hook
-    const { loading } = useDashboardData();
-    // const [isModalOpen, setIsModalOpen] = useState(false); // Disabled for now
-    // Loading State
+    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
+
     if (loading && !isPreview) {
         return (
             <div className="flex w-full items-center justify-center py-20">
@@ -53,18 +86,53 @@ const Dashboard = ({ isPreview = false }) => {
         )
     }
 
-    // Use Mock Data for Preview Mode ONLY
-    const displayStats = {
-        monthlySpend: 8240.50,
-        score: 78
-    };
+    const displayStats = isPreview ? { monthlySpend: 8240.50 } : { monthlySpend: spendingStats?.monthlySpend || 0 };
 
-    const displayCategories = [
-        { name: 'Housing', amount: 2400, color: 'bg-orange-500', icon: Home },
-        { name: 'Food & Dining', amount: 1850, color: 'bg-blue-500', icon: UtensilsCrossed },
-        { name: 'Transport', amount: 940, color: 'bg-purple-500', icon: Car },
-        { name: 'Subscriptions', amount: 320, color: 'bg-pink-500', icon: Smartphone },
-    ];
+    const score = Math.round(financialHealth || 0);
+    let healthLabel = 'Bad';
+    let healthColor = 'text-rose-400';
+    let healthBg = 'bg-rose-500/10';
+
+    if (score >= 70) {
+        healthLabel = 'Good';
+        healthColor = 'text-emerald-400';
+        healthBg = 'bg-emerald-500/10';
+    } else if (score >= 40) {
+        healthLabel = 'Average';
+        healthColor = 'text-blue-400';
+        healthBg = 'bg-blue-500/10';
+    }
+
+    const chartData = (monthlyStatsData || []).map(m => ({
+        month: m.month,
+        income: parseFloat(m.income) || 0,
+        expense: parseFloat(m.expense) || 0
+    }));
+
+    const enhancedData = chartData.map((item, index, arr) => {
+        if (index === 0) {
+            return { ...item, changeInfo: { value: 0, label: "New", trend: "neutral" } };
+        }
+        const prev = arr[index - 1].expense;
+        const curr = item.expense;
+        return {
+            ...item,
+            changeInfo: getSafePercentageChange(curr, prev)
+        };
+    });
+
+    const { uiLabel, trend } = expenseTrend || { uiLabel: "First active record", trend: "neutral" };
+    const changeColor = trend === 'up' ? 'text-rose-400' : (trend === 'down' ? 'text-emerald-400' : 'text-zinc-400');
+    const changeBg = trend === 'up' ? 'bg-rose-500/10' : (trend === 'down' ? 'bg-emerald-500/10' : 'bg-zinc-500/10');
+
+    const displayCategories = (categoryBreakdown || []).map((c, i) => ({
+        name: c.name,
+        amount: c.amount,
+        color: ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-emerald-500'][i % 5],
+        icon: UtensilsCrossed
+    }));
+
+    const maxCategoryAmount = Math.max(...displayCategories.map(c => c.amount), 1);
 
     return (
         <div className="p-6 space-y-6 pb-8 relative z-10 w-full">
@@ -81,7 +149,7 @@ const Dashboard = ({ isPreview = false }) => {
                         <div className="space-y-1">
                             <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Financial Health</p>
                             <div className="flex items-baseline gap-2">
-                                <h2 className="text-2xl font-bold text-white">{displayStats.score}<span className="text-base text-zinc-600 font-medium">/100</span></h2>
+                                <h2 className="text-2xl font-bold text-white">{score}<span className="text-base text-zinc-600 font-medium">/100</span></h2>
                             </div>
                         </div>
                         <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/5 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-colors">
@@ -89,11 +157,11 @@ const Dashboard = ({ isPreview = false }) => {
                         </div>
                     </div>
                     <div className="mt-4 flex items-center gap-2">
-                        <div className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-medium flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            +4 pts
+                        <div className={`px-2 py-1.5 rounded-md ${healthBg} ${healthColor} text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1`}>
+                            {score >= 70 ? <TrendingUp className="w-3 h-3" /> : (score >= 40 ? <Activity className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />)}
+                            {healthLabel}
                         </div>
-                        <span className="text-zinc-600 text-xs">vs last month</span>
+                        <span className="text-zinc-600 text-xs font-medium">Based on income & goals</span>
                     </div>
                 </motion.div>
 
@@ -116,11 +184,11 @@ const Dashboard = ({ isPreview = false }) => {
                         </div>
                     </div>
                     <div className="mt-4 flex items-center gap-2">
-                        <div className="px-2 py-1 rounded-md bg-rose-500/10 text-rose-400 text-xs font-medium flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            +2.1%
+                        <div className={`px-2 py-1.5 rounded-md ${changeBg} ${changeColor} text-[10px] font-extrabold tracking-wide uppercase flex items-center gap-1`}>
+                            {trend === 'up' ? <TrendingUp className="w-3 h-3" /> : (trend === 'down' ? <TrendingDown className="w-3 h-3" /> : <Activity className="w-3 h-3" />)}
+                            {uiLabel}
                         </div>
-                        <span className="text-zinc-600 text-xs">vs last month</span>
+                        <span className="text-zinc-600 text-xs font-medium">vs last month</span>
                     </div>
                 </motion.div>
 
@@ -142,8 +210,8 @@ const Dashboard = ({ isPreview = false }) => {
                             <Sparkles className="w-5 h-5 text-blue-200 animate-pulse-slow" />
                         </div>
 
-                        <p className="text-white font-medium leading-relaxed text-lg">
-                            &quot;You spent <span className="font-bold text-white underline decoration-blue-300 decoration-2 underline-offset-2">22% more</span> on food delivery this month compared to your average.&quot;
+                        <p className="text-white font-medium leading-relaxed text-lg whitespace-pre-line">
+                            {aiInsight}
                         </p>
                     </div>
                 </motion.div>
@@ -183,76 +251,22 @@ const Dashboard = ({ isPreview = false }) => {
                         </div>
                     </div>
 
-                    {/* Bars Container */}
-                    <div className="flex-1 flex items-end justify-center gap-[24px] w-full px-6 relative z-10 select-none pb-4 overflow-visible">
-                        {spendingData.map((item, index) => {
-                            // ✅ CORRECT BAR HEIGHT DATA
-                            const heights = {
-                                'Jan': 38,
-                                'Feb': 52,
-                                'Mar': 45,
-                                'Apr': 72, // Active
-                                'May': 60,
-                                'Jun': 58
-                            };
-                            // Ensure height is never 0 using logical OR fallback
-                            const barHeightPct = heights[item.month] || 40;
-
-                            return (
-                                <div key={item.month} className="flex flex-col items-center gap-4 group/bar relative h-full justify-end">
-                                    {/* Bar Wrapper - Size driven by height % */}
-                                    <div className="relative w-[32px] flex items-end justify-center" style={{ height: `${barHeightPct}%` }}>
-                                        {/* Tooltip - Anchored to Top of Bar Wrapper */}
-                                        <div className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 transition-all duration-300 transform ${item.active ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-95 group-hover/bar:opacity-100 group-hover/bar:translate-y-0 group-hover/bar:scale-100'} bg-[#12141C]/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.5)] z-50 whitespace-nowrap pointer-events-none origin-bottom`}>
-                                            ₹{item.amount.toLocaleString()}
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#12141C] border-b border-r border-white/10 transform rotate-45"></div>
-                                        </div>
-
-                                        {/* Actual Animated Bar */}
-                                        <motion.div
-                                            // ✅ POP OUT ANIMATION
-                                            initial={{ opacity: 0, y: 40, scaleY: 0.6 }}
-                                            animate={{ opacity: 1, y: 0, scaleY: 1 }}
-                                            transition={{
-                                                duration: 0.8,
-                                                delay: index * 0.08, // Stagger 80ms
-                                                ease: [0.16, 1, 0.3, 1]
-                                            }}
-                                            className={`w-full h-full rounded-full relative transition-all duration-300 ease-out flex-shrink-0 origin-bottom 
-                                                    ${item.active
-                                                    ? 'bg-gradient-to-b from-[#7EB6FF] via-[#4F86F7] to-[#2F6BFF] hover:scale-y-[1.05] hover:brightness-110 shadow-[0_0_18px_rgba(47,107,255,0.4)]'
-                                                    : 'bg-white/10 hover:bg-white/20 hover:scale-y-[1.05] hover:brightness-110'
-                                                }
-                                                `}
-                                        >
-                                            {/* Inactive Bevel/Highlight */}
-                                            {!item.active && (
-                                                <div className="absolute inset-0 rounded-full border border-white/5 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-                                            )}
-
-                                            {/* Active Inner Light */}
-                                            {item.active && (
-                                                <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full pointer-events-none" />
-                                            )}
-
-                                            {/* ✅ ACTIVE GLOW PULSE ANIMATION */}
-                                            {item.active && (
-                                                <motion.div
-                                                    animate={{ boxShadow: ["0 0 8px rgba(47,107,255,0.4)", "0 0 20px rgba(47,107,255,0.6)", "0 0 8px rgba(47,107,255,0.4)"] }}
-                                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                                    className="absolute inset-0 rounded-full bg-blue-500/20 blur-xl -z-10"
-                                                />
-                                            )}
-                                        </motion.div>
-                                    </div>
-
-                                    {/* Label - Anchored to Chart Bottom */}
-                                    <span className={`text-[11px] font-semibold tracking-wide uppercase transition-colors duration-300 absolute top-full mt-3 ${item.active ? 'text-white font-bold' : 'text-zinc-500 group-hover/bar:text-zinc-300'}`}>
-                                        {item.month}
-                                    </span>
-                                </div>
-                            )
-                        })}
+                    {/* Recharts Container */}
+                    <div className="flex-1 w-full mt-4 ml-[-20px] relative z-10 overflow-hidden h-[180px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={enhancedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+                                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
+                                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} content={<CustomTooltip />} />
+                                <Bar dataKey="income" name="Income" fill="#34d399" radius={[4, 4, 0, 0]} barSize={20} />
+                                <Bar dataKey="expense" name="Expense" radius={[4, 4, 0, 0]} barSize={20}>
+                                    {enhancedData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.changeInfo.trend === 'up' ? '#f43f5e' : (entry.changeInfo.trend === 'down' ? '#34d399' : '#a1a1aa')} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </motion.div>
 
@@ -267,7 +281,7 @@ const Dashboard = ({ isPreview = false }) => {
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex flex-col gap-0.5">
                             <h3 className="text-lg font-bold text-white leading-tight">Top Sources</h3>
-                            <p className="text-sm text-zinc-500 font-medium">Last 14 days</p>
+                            <p className="text-sm text-zinc-500 font-medium">Last 30 Days</p>
                         </div>
                         <button className="text-zinc-500 hover:text-white transition-colors p-1 rounded-md hover:bg-white/5">
                             <ChevronDown className="w-4 h-4" />
@@ -277,9 +291,9 @@ const Dashboard = ({ isPreview = false }) => {
                     {/* KPI Group - 24px bottom margin (Clear Section Break) */}
                     <div className="mb-6 flex flex-col gap-1">
                         <h2 className="text-[26px] font-bold text-white leading-none">₹{displayStats.monthlySpend.toLocaleString()}</h2>
-                        <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold tracking-wide">
-                            <TrendingUp className="w-3.5 h-3.5" />
-                            <span>12% increase</span>
+                        <div className={`flex items-center gap-1.5 ${changeColor} text-xs font-bold tracking-wide`}>
+                            {trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : (trend === 'down' ? <TrendingDown className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />)}
+                            <span>{uiLabel}</span>
                         </div>
                     </div>
 
@@ -301,7 +315,7 @@ const Dashboard = ({ isPreview = false }) => {
                                 <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden relative z-0 ring-1 ring-white/5">
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: `${Math.min((cat.amount / displayStats.monthlySpend) * 100, 100)}%` }}
+                                        animate={{ width: `${Math.min((cat.amount / maxCategoryAmount) * 100, 100)}%` }}
                                         transition={{ duration: 1, delay: 0.8 + (i * 0.1) }}
                                         className={`h-full ${cat.color} rounded-full relative z-10`}
                                     />
@@ -311,6 +325,76 @@ const Dashboard = ({ isPreview = false }) => {
                             <div className="text-center text-zinc-500 text-xs py-4">No categories found</div>
                         )}
                     </div>
+                </motion.div>
+            </div>
+
+            {/* Insights Row: Budget Tracker & Goal Predictions */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Budget Tracking */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.5 }}
+                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
+                >
+                    <div className="flex items-center gap-2 mb-4">
+                        <Wallet className="w-5 h-5 text-blue-400" />
+                        <h3 className="text-lg font-bold text-white leading-tight">Budget vs Actual</h3>
+                    </div>
+                    {budgetsVsActual.length > 0 ? budgetsVsActual.map((b, i) => (
+                        <div key={i} className="mb-4 last:mb-0">
+                            <div className="flex justify-between items-center text-sm mb-1.5">
+                                <span className="text-zinc-300 font-medium flex items-center gap-2">
+                                    {b.category}
+                                    {b.usage_percentage > 100 && (
+                                        <span className="text-[10px] font-extrabold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
+                                            Over Budget
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="text-zinc-400">₹{b.actual_spend} / ₹{b.monthly_limit}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min(b.usage_percentage, 100)}%` }}
+                                    className={`h-full rounded-full ${b.usage_percentage > 90 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-blue-500'}`}
+                                />
+                            </div>
+                        </div>
+                    )) : (
+                        <p className="text-sm text-zinc-500">No active budgets this month. Setting limits helps control capital.</p>
+                    )}
+                </motion.div>
+
+                {/* Goal Predictions */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.6 }}
+                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
+                >
+                    <div className="flex items-center gap-2 mb-4">
+                        <Target className="w-5 h-5 text-emerald-400" />
+                        <h3 className="text-lg font-bold text-white leading-tight">Goal Forecasts</h3>
+                    </div>
+                    {goalPredictions.length > 0 ? goalPredictions.map((goal, i) => (
+                        <div key={i} className="mb-4 last:mb-0 p-3 bg-zinc-950/50 border border-white/5 rounded-xl">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-zinc-300 font-bold">{goal.title}</span>
+                                <span className="text-xs font-medium text-zinc-500 shadow-sm">Target: ₹{goal.target_amount}</span>
+                            </div>
+                            <p className="text-xs text-zinc-400 mb-2">Saved: ₹{goal.saved_amount} | Avg Monthly Rate: ₹{Math.round(goal.avg_monthly_saving)}</p>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                                <span className="text-emerald-400 font-bold text-sm tracking-wide">
+                                    {goal.months_left <= 0 ? "Goal Reached! 🎉" : `${Math.ceil(goal.months_left)} months to completion`}
+                                </span>
+                            </div>
+                        </div>
+                    )) : (
+                        <p className="text-sm text-zinc-500">No active goals. Define what you are saving for.</p>
+                    )}
                 </motion.div>
             </div>
 

@@ -1,6 +1,44 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, TrendingUp, CalendarDays } from 'lucide-react';
+
+const FloatingCurrency = () => {
+    const [elements, setElements] = useState([]);
+
+    useEffect(() => {
+        const createFloatingElement = () => {
+            const id = Math.random().toString(36).substr(2, 9);
+            const left = Math.floor(Math.random() * 80) + 10; // 10% to 90%
+            setElements(prev => [...prev, { id, left }]);
+            setTimeout(() => {
+                setElements(prev => prev.filter(el => el.id !== id));
+            }, 3000);
+        };
+
+        const interval = setInterval(createFloatingElement, 2500);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <AnimatePresence>
+                {elements.map(el => (
+                    <motion.div
+                        key={el.id}
+                        initial={{ opacity: 0, y: 150, scale: 0.5 }}
+                        animate={{ opacity: [0, 0.4, 0], y: -50, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 3, ease: "easeOut" }}
+                        style={{ left: `${el.left}%` }}
+                        className="absolute bottom-0 text-white/5 font-bold text-2xl"
+                    >
+                        ₹
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 const AiInsightsProjection = ({ insightText }) => {
     // Mock chart data arrays
@@ -14,15 +52,27 @@ const AiInsightsProjection = ({ insightText }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="lg:col-span-1 relative overflow-hidden p-6 rounded-3xl flex flex-col justify-between cursor-pointer group shadow-xl h-[340px]"
+                className="lg:col-span-1 relative overflow-hidden p-8 rounded-3xl flex flex-col justify-between cursor-pointer group shadow-2xl h-[340px] border border-white/10"
             >
                 {/* Dynamic Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-700 to-blue-800 opacity-90 transition-transform duration-700 group-hover:scale-105" />
+                <motion.div 
+                    animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
+                    transition={{ repeat: Infinity, repeatType: 'reverse', duration: 12, ease: 'linear' }}
+                    className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900/90 to-blue-900 opacity-90 transition-transform duration-1000 group-hover:scale-105 bg-[length:200%_200%]" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 opacity-50 mix-blend-overlay" />
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+
+                {/* Shimmer Sweep Animation */}
+                <motion.div 
+                    animate={{ x: ['-200%', '300%'] }}
+                    transition={{ repeat: Infinity, duration: 10, ease: 'linear', repeatDelay: 2 }}
+                    className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 pointer-events-none z-10"
+                />
                 
                 {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 blur-[50px] rounded-full pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-400/20 blur-[40px] rounded-full pointer-events-none" />
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500/30 blur-[60px] rounded-full pointer-events-none group-hover:bg-indigo-400/40 transition-colors duration-1000" />
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/20 blur-[60px] rounded-full pointer-events-none group-hover:bg-purple-400/30 transition-colors duration-1000" />
 
                 <div className="relative z-10 flex flex-col h-full">
                     <div className="flex items-center justify-between mb-auto">
@@ -33,13 +83,13 @@ const AiInsightsProjection = ({ insightText }) => {
                     </div>
 
                     <div className="space-y-4">
-                        <p className="text-white font-medium leading-relaxed text-[17px] md:text-lg drop-shadow-sm">
+                        <p className="text-white font-medium leading-relaxed text-lg lg:text-xl drop-shadow-md">
                             &quot;{insightText}&quot;
                         </p>
-                        <div className="w-full h-px bg-white/20 mt-4 mb-2" />
-                        <button className="flex items-center gap-2 text-sm text-blue-100 font-bold hover:text-white transition-colors group/btn">
+                        <div className="w-full h-px bg-white/10 mt-6 mb-4" />
+                        <button className="flex items-center gap-2 text-sm text-indigo-200 font-bold hover:text-white transition-colors group/btn">
                             Apply Recommendations
-                            <TrendingUp className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                            <TrendingUp className="w-4 h-4 group-hover/btn:translate-x-1.5 transition-transform" />
                         </button>
                     </div>
                 </div>
@@ -50,11 +100,11 @@ const AiInsightsProjection = ({ insightText }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-2 rounded-3xl p-6 relative overflow-hidden border border-white/5 bg-zinc-900/40 backdrop-blur-xl h-[340px] flex flex-col"
+                className="lg:col-span-2 rounded-3xl p-6 lg:p-8 relative overflow-hidden border border-white/5 bg-zinc-900/40 backdrop-blur-xl shadow-lg h-[340px] flex flex-col"
             >
                 <div className="flex items-start justify-between mb-6 relative z-10">
                     <div>
-                        <h3 className="text-xl font-bold text-white tracking-tight">Projected Trajectory</h3>
+                        <h3 className="text-xl font-bold text-white tracking-tight drop-shadow-sm">Projected Trajectory</h3>
                         <p className="text-sm text-zinc-500 font-medium mt-1">Estimated growth across all goals</p>
                     </div>
                     <div className="px-3 py-1.5 bg-zinc-950/80 rounded-full border border-white/5 flex items-center gap-2 hidden sm:flex">
@@ -65,6 +115,8 @@ const AiInsightsProjection = ({ insightText }) => {
 
                 {/* Custom Graph Area */}
                 <div className="flex-1 relative w-full mt-4">
+                    <FloatingCurrency />
+                    
                     {/* Grid Lines */}
                     <div className="absolute inset-0 flex flex-col justify-between opacity-30 pointer-events-none">
                         {[...Array(4)].map((_, i) => (
@@ -87,14 +139,32 @@ const AiInsightsProjection = ({ insightText }) => {
                                             ₹{value.toLocaleString()}
                                         </div>
 
-                                        {/* Bar */}
+                                        {/* Bar Entrance & Breathing Loop */}
                                         <motion.div
                                             initial={{ height: "0%" }}
-                                            animate={{ height: `${heightPct}%` }}
-                                            transition={{ duration: 1, delay: 0.3 + (index * 0.1), ease: "easeOut" }}
-                                            className="w-full bg-gradient-to-t from-blue-900/40 to-blue-500/80 rounded-t-sm relative overflow-hidden group-hover/chart:brightness-125 transition-all outline outline-1 outline-blue-400/20"
+                                            animate={{ height: [`${heightPct}%`, `${heightPct + 2}%`, `${heightPct}%`] }}
+                                            transition={{ 
+                                                height: {
+                                                    times: [0, 0.5, 1],
+                                                    duration: 4,
+                                                    repeat: Infinity,
+                                                    repeatType: 'reverse',
+                                                    ease: "easeInOut",
+                                                    delay: 1.5 // Start breathing after entrance
+                                                }
+                                            }}
+                                            className="w-full bg-gradient-to-t from-blue-900/40 to-indigo-500/90 rounded-t-md relative overflow-hidden group-hover/chart:brightness-125 transition-all outline outline-1 outline-indigo-400/30 shadow-[0_-5px_15px_rgba(99,102,241,0.2)] group-hover/chart:w-[110%] origin-bottom"
                                         >
-                                            <div className="absolute top-0 inset-x-0 h-1 bg-blue-300/50" />
+                                            {/* Dedicated entrance animation layer */}
+                                            <motion.div 
+                                                initial={{ y: "100%" }}
+                                                animate={{ y: "0%" }}
+                                                transition={{ duration: 1.2, delay: 0.3 + (index * 0.1), ease: [0.16, 1, 0.3, 1] }}
+                                                className="absolute inset-0 w-full h-full bg-inherit"
+                                            >
+                                                <div className="absolute top-0 inset-x-0 h-1.5 bg-indigo-300/60 blur-[1px]" />
+                                                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent mix-blend-overlay" />
+                                            </motion.div>
                                         </motion.div>
                                     </div>
                                     <span className="text-[11px] font-bold text-zinc-500 uppercase">{month}</span>

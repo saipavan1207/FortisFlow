@@ -13,7 +13,7 @@ const TransactionRow = ({ transaction, onDelete }) => {
     const [deleting, setDeleting] = useState(false);
     const isIncome = transaction.type === 'income';
     const accountSource = SOURCE_LABELS[transaction.account_source] || transaction.account_source || 'UPI';
-    const txnDate = transaction.date || transaction.transaction_date;
+    const txnDate = transaction.date;
 
     const handleDelete = async (e) => {
         e.stopPropagation();

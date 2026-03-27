@@ -10,20 +10,21 @@ const GoalsOverview = ({ stats }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="bg-zinc-950/50 border border-white/5 p-5 h-[160px] rounded-2xl flex flex-col justify-between group hover:border-white/10 transition-colors relative overflow-hidden"
+                className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 h-[160px] rounded-2xl flex flex-col justify-between group hover:border-white/10 hover:bg-zinc-900/50 transition-all duration-300 relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors" />
+                {/* Soft ambient glow */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/10 blur-[40px] rounded-full group-hover:bg-blue-500/20 transition-colors duration-500" />
                 <div className="flex items-start justify-between relative z-10">
                     <div className="space-y-1">
-                        <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Active Goals</p>
-                        <h2 className="text-3xl font-bold text-white mt-1">{stats.totalActive}</h2>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Active Goals</p>
+                        <h2 className="text-3xl font-extrabold text-white mt-1 drop-shadow-sm">{stats.totalActive}</h2>
                     </div>
-                    <div className="p-3 rounded-xl bg-zinc-900/80 border border-white/5 group-hover:bg-blue-500/20 group-hover:border-blue-500/30 transition-all duration-300">
+                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] shadow-inner group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all duration-300">
                         <Target className="w-6 h-6 text-blue-400" />
                     </div>
                 </div>
                 <div className="mt-4 flex items-center gap-2 relative z-10">
-                    <span className="text-zinc-400 text-sm font-medium">Currently tracking</span>
+                    <span className="text-zinc-400 text-xs font-medium">Currently tracking</span>
                 </div>
             </motion.div>
 
@@ -32,20 +33,20 @@ const GoalsOverview = ({ stats }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
-                className="bg-zinc-950/50 border border-white/5 p-5 h-[160px] rounded-2xl flex flex-col justify-between group hover:border-white/10 transition-colors relative overflow-hidden"
+                className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 h-[160px] rounded-2xl flex flex-col justify-between group hover:border-white/10 hover:bg-zinc-900/50 transition-all duration-300 relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors" />
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 blur-[40px] rounded-full group-hover:bg-emerald-500/20 transition-colors duration-500" />
                 <div className="flex items-start justify-between relative z-10">
                     <div className="space-y-1">
-                        <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Completed</p>
-                        <h2 className="text-3xl font-bold text-white mt-1">{stats.completed}</h2>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Completed</p>
+                        <h2 className="text-3xl font-extrabold text-white mt-1 drop-shadow-sm">{stats.completed}</h2>
                     </div>
-                    <div className="p-3 rounded-xl bg-zinc-900/80 border border-white/5 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/30 transition-all duration-300">
+                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] shadow-inner group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-all duration-300">
                         <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                     </div>
                 </div>
                 <div className="mt-4 flex items-center gap-2 relative z-10">
-                    <span className="text-zinc-400 text-sm font-medium">Goals achieved so far</span>
+                    <span className="text-zinc-400 text-xs font-medium">Goals achieved so far</span>
                 </div>
             </motion.div>
 
@@ -54,29 +55,31 @@ const GoalsOverview = ({ stats }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
-                className="bg-zinc-950/50 border border-white/5 p-5 h-[160px] rounded-2xl flex flex-col justify-between group hover:border-white/10 transition-colors relative overflow-hidden"
+                className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 shadow-lg p-5 h-[160px] rounded-2xl flex flex-col justify-between group hover:border-white/10 hover:bg-zinc-900/50 transition-all duration-300 relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors" />
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/10 blur-[40px] rounded-full group-hover:bg-purple-500/20 transition-colors duration-500" />
                 <div className="flex items-start justify-between relative z-10">
                     <div className="space-y-1">
-                        <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Overall Progress</p>
+                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Overall Progress</p>
                         <div className="flex items-baseline gap-1 mt-1">
-                            <h2 className="text-3xl font-bold text-white">{stats.averageProgress}</h2>
-                            <span className="text-xl text-zinc-500 font-semibold">%</span>
+                            <h2 className="text-3xl font-extrabold text-white drop-shadow-sm">{stats.averageProgress}</h2>
+                            <span className="text-xl text-zinc-500 font-bold">%</span>
                         </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-zinc-900/80 border border-white/5 group-hover:bg-purple-500/20 group-hover:border-purple-500/30 transition-all duration-300">
+                    <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] shadow-inner group-hover:bg-purple-500/10 group-hover:border-purple-500/20 transition-all duration-300">
                         <TrendingUp className="w-6 h-6 text-purple-400" />
                     </div>
                 </div>
                 <div className="mt-4 flex flex-col gap-2 relative z-10">
-                    <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-zinc-800/80 rounded-full overflow-hidden shadow-inner ring-1 ring-white/5">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${stats.averageProgress}%` }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                            className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
-                        />
+                            transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
+                            className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full relative"
+                        >
+                             <div className="absolute right-0 top-0 bottom-0 w-8 bg-white/20 blur-[3px] rounded-full" />
+                        </motion.div>
                     </div>
                 </div>
             </motion.div>

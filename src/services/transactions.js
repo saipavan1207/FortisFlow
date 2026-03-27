@@ -5,24 +5,15 @@ import { supabase } from '../lib/supabase';
  * App uses: 'income' / 'expense'
  * DB uses:  'credit' / 'debit'
  */
-const mapTypeToDB = (type) => {
-    if (type === 'income') return 'credit';
-    if (type === 'expense') return 'debit';
-    return type; // already correct enum value
-};
+const mapTypeToDB = (type) => type;
 
-const mapTypeFromDB = (type) => {
-    if (type === 'credit') return 'income';
-    if (type === 'debit') return 'expense';
-    return type;
-};
+const mapTypeFromDB = (type) => type;
 
-/**
- * Map source string to DB account_source_type enum
- */
 const mapSourceToDB = (source) => {
-    const validSources = ['upi', 'bank', 'card', 'sms'];
+    const validSources = ['upi', 'bank', 'card', 'sms', 'HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'Other'];
     if (validSources.includes(source)) return source;
+    // Attempt uppercase transformation matching for known values before defaulting to upi
+    if (source?.toUpperCase() === 'UPI') return 'upi';
     return 'upi'; // default fallback
 };
 
@@ -39,7 +30,7 @@ export const addTransaction = async (transactionData) => {
             merchant: transactionData.merchant,
             category: transactionData.category,
             account_source: mapSourceToDB(transactionData.source || 'upi'),
-            transaction_date: transactionData.date
+            date: transactionData.date
                 ? new Date(transactionData.date).toISOString()
                 : new Date().toISOString(),
             status: transactionData.status || 'completed',
@@ -76,7 +67,7 @@ export const bulkAddTransactions = async (transactions) => {
             merchant: txn.merchant,
             category: txn.category,
             account_source: mapSourceToDB(txn.source || 'sms'),
-            transaction_date: txn.date
+            date: txn.date
                 ? new Date(txn.date).toISOString()
                 : new Date().toISOString(),
             status: 'completed',
@@ -109,7 +100,7 @@ export const getTransactions = async (filters = {}) => {
             .from('transactions')
             .select('*')
             .eq('user_id', user.id)
-            .order('transaction_date', { ascending: false });
+            .order('date', { ascending: false });
 
         // ── Type filter ──
         if (filters.type && filters.type !== 'all') {
@@ -141,7 +132,7 @@ export const getTransactions = async (filters = {}) => {
             }
 
             if (startDate) {
-                query = query.gte('transaction_date', startDate.toISOString());
+                query = query.gte('date', startDate.toISOString());
             }
         }
 
@@ -163,7 +154,7 @@ export const getTransactions = async (filters = {}) => {
         const mapped = (data || []).map(row => ({
             ...row,
             type: mapTypeFromDB(row.type),
-            date: row.transaction_date,
+            date: row.date,
             source: row.account_source,
         }));
 

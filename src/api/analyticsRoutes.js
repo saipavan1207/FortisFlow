@@ -44,9 +44,9 @@ router.get('/analytics/category-expense', requireAuth, async (req, res) => {
             transactions
         WHERE 
             user_id = $1 
-            AND type = 'debit'
-            AND transaction_date >= $2
-            AND transaction_date <= $3
+            AND type = 'expense'
+            AND date >= $2
+            AND date <= $3
         GROUP BY 
             category
         ORDER BY 
@@ -71,16 +71,16 @@ router.get('/analytics/monthly-trend', requireAuth, async (req, res) => {
 
     const query = `
         SELECT 
-            TO_CHAR(transaction_date, 'YYYY-MM') as month_year,
-            SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_expense,
-            SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as total_income
+            TO_CHAR(date, 'YYYY-MM') as month_year,
+            SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as total_expense,
+            SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as total_income
         FROM 
             transactions
         WHERE 
             user_id = $1
-            AND transaction_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '5 months')
+            AND date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '5 months')
         GROUP BY 
-            TO_CHAR(transaction_date, 'YYYY-MM')
+            TO_CHAR(date, 'YYYY-MM')
         ORDER BY 
             month_year ASC;
     `;
@@ -110,8 +110,8 @@ router.get('/analytics/top-merchants', requireAuth, async (req, res) => {
             transactions
         WHERE 
             user_id = $1 
-            AND type = 'debit'
-            AND transaction_date >= CURRENT_DATE - INTERVAL '30 days'
+            AND type = 'expense'
+            AND date >= CURRENT_DATE - INTERVAL '30 days'
         GROUP BY 
             merchant
         ORDER BY 
@@ -138,13 +138,13 @@ router.get('/analytics/recent-transactions', requireAuth, async (req, res) => {
 
     const query = `
         SELECT 
-            id, amount, type, merchant, category, account_source, transaction_date
+            id, amount, type, merchant, category, account_source, date
         FROM 
             transactions
         WHERE 
             user_id = $1
         ORDER BY 
-            transaction_date DESC, created_at DESC
+            date DESC, created_at DESC
         LIMIT $2;
     `;
 
@@ -171,14 +171,14 @@ router.get('/analytics/income-expense', requireAuth, async (req, res) => {
     const query = `
         WITH monthly_stats AS (
             SELECT 
-                SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as total_income,
-                SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_expense
+                SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as total_income,
+                SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as total_expense
             FROM 
                 transactions
             WHERE 
                 user_id = $1
-                AND transaction_date >= $2
-                AND transaction_date <= $3
+                AND date >= $2
+                AND date <= $3
         )
         SELECT 
             COALESCE(total_income, 0) as total_income,

@@ -105,7 +105,8 @@ create table public.budgets (
   category text not null,
   monthly_limit numeric not null,
   month date,
-  created_at timestamp with time zone default now()
+  created_at timestamp with time zone default now(),
+  unique (user_id, category, month)
 );
 
 alter table public.budgets enable row level security;

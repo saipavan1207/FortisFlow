@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { generateFinancialInsight } from '../services/aiService';
 import { fetchDashboardData } from '../services/dashboardService';
@@ -6,6 +6,8 @@ import { getSafePercentageChange } from '../utils/formatters';
 
 export const useDashboardData = (isPreview = false) => {
     const [loading, setLoading] = useState(!isPreview);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
     const [data, setData] = useState(() => {
         if (isPreview) {
             return {
@@ -65,6 +67,7 @@ export const useDashboardData = (isPreview = false) => {
         const fetchData = async () => {
             try {
                 if (!supabase) return;
+                setLoading(true);
 
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
@@ -212,7 +215,7 @@ export const useDashboardData = (isPreview = false) => {
         };
 
         fetchData();
-    }, []);
+    }, [refreshKey]);
 
-    return { loading, ...data };
+    return { loading, refresh, ...data };
 };

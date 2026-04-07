@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, Legend } from 'recharts'
 import {
@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { useDashboardData } from '../../hooks/useDashboardData'
 import { getSafePercentageChange } from '../../utils/formatters'
+import BudgetModal from './BudgetModal'
 
 const spendingData = [
     { month: 'Jan', amount: 4500, active: false },
@@ -76,7 +77,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const Dashboard = ({ isPreview = false }) => {
-    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
+    const { loading, refresh, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
+    const [budgetModalOpen, setBudgetModalOpen] = useState(false);
 
     if (loading && !isPreview) {
         return (
@@ -491,7 +493,9 @@ const Dashboard = ({ isPreview = false }) => {
                             </div>
                         </div>
 
-                        <button className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden">
+                        <button
+                            onClick={() => setBudgetModalOpen(true)}
+                            className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
                             <span className="relative z-10">Adjust Budget</span>
                             <Settings className="w-4 h-4 text-zinc-700 group-hover/btn:rotate-90 transition-transform duration-500 relative z-10" />
@@ -500,6 +504,14 @@ const Dashboard = ({ isPreview = false }) => {
                 </div>
             </motion.div>
         </div>
+
+        {!isPreview && (
+            <BudgetModal
+                isOpen={budgetModalOpen}
+                onClose={() => setBudgetModalOpen(false)}
+                onSave={() => { setBudgetModalOpen(false); refresh(); }}
+            />
+        )}
     )
 }
 

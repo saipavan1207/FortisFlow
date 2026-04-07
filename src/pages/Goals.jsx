@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '../lib/supabase';
+import { fetchDashboardData } from '../services/dashboardService';
 import GoalsOverview from '../components/sections/goals/GoalsOverview';
 import GoalCardsGrid from '../components/sections/goals/GoalCardsGrid';
 import AiInsightsProjection from '../components/sections/goals/AiInsightsProjection';
@@ -8,51 +10,104 @@ import GoalPlannerModal from '../components/sections/goals/GoalPlannerModal';
 // Mock AI Insight
 const aiInsight = "You are 44% toward your Laptop goal. Reduce food delivery spending by ₹1,000/month to reach your goal 2 months earlier.";
 
+const GOAL_PALETTE = [
+    { gradient: 'from-blue-500 to-indigo-600',    ring: '#3b82f6' },
+    { gradient: 'from-emerald-500 to-teal-600',   ring: '#10b981' },
+    { gradient: 'from-purple-500 to-pink-600',    ring: '#a855f7' },
+    { gradient: 'from-orange-500 to-rose-600',    ring: '#f97316' },
+    { gradient: 'from-cyan-500 to-blue-600',      ring: '#06b6d4' },
+];
+
+const GOAL_ICONS = ['🎯', '🛡️', '✈️', '💻', '🏠', '🚗', '📱', '💰'];
+
+const formatDeadline = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+};
+
 const Goals = () => {
     const [isPlannerOpen, setIsPlannerOpen] = useState(false);
-    
-    // Mock Data
-    const [goals, setGoals] = useState([
-        {
-            id: 1,
-            name: 'Laptop',
-            savedAmount: 35000,
-            targetAmount: 80000,
-            deadline: 'Dec 2026',
-            successProbability: 76,
-            icon: '💻',
-            color: 'from-blue-500 to-indigo-600'
-        },
-        {
-            id: 2,
-            name: 'Emergency Fund',
-            savedAmount: 120000,
-            targetAmount: 300000,
-            deadline: 'Jan 2027',
-            successProbability: 92,
-            icon: '🛡️',
-            color: 'from-emerald-500 to-teal-600'
-        },
-        {
-            id: 3,
-            name: 'Vacation',
-            savedAmount: 15000,
-            targetAmount: 50000,
-            deadline: 'Aug 2026',
-            successProbability: 45,
-            icon: '✈️',
-            color: 'from-purple-500 to-pink-600'
+    const [goals, setGoals] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchGoals = useCallback(async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { setLoading(false); return; }
+
+            const [goalsResult, dashResult] = await Promise.all([
+                supabase
+                    .from('goals')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false }),
+                fetchDashboardData(user.id),
+            ]);
+
+            const goalsData = goalsResult.data || [];
+            const { goalPredictions } = dashResult;
+
+            const predMap = {};
+            (goalPredictions || []).forEach(p => { predMap[p.title] = p; });
+
+            const mapped = goalsData.map((g, idx) => {
+                const palette = GOAL_PALETTE[idx % GOAL_PALETTE.length];
+                const pred = predMap[g.title];
+                const saved = parseFloat(g.saved_amount) || 0;
+                const target = parseFloat(g.target_amount) || 0;
+                const pct = target > 0 ? (saved / target) * 100 : 0;
+                return {
+                    id: g.id,
+                    name: g.title,
+                    savedAmount: saved,
+                    targetAmount: target,
+                    deadline: formatDeadline(g.target_date),
+                    successProbability: Math.min(95, Math.max(30, Math.round(pct * 0.5 + 50))),
+                    icon: GOAL_ICONS[idx % GOAL_ICONS.length],
+                    color: palette.gradient,
+                    ringColor: palette.ring,
+                    monthsLeft: pred ? pred.months_left : null,
+                };
+            });
+
+            setGoals(mapped);
+        } catch (err) {
+            console.error('Goals fetch error:', err);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    }, []);
+
+    useEffect(() => {
+        fetchGoals();
+    }, [fetchGoals]);
 
     const stats = {
-        totalActive: goals.length,
-        completed: 1,
-        averageProgress: Math.round(goals.reduce((acc, goal) => acc + (goal.savedAmount / goal.targetAmount) * 100, 0) / goals.length)
+        totalActive: goals.filter(g => g.savedAmount < g.targetAmount).length,
+        completed: goals.filter(g => g.savedAmount >= g.targetAmount).length,
+        averageProgress: goals.length > 0
+            ? Math.round(goals.reduce((acc, g) => acc + Math.min((g.savedAmount / g.targetAmount) * 100, 100), 0) / goals.length)
+            : 0,
     };
 
-    const handleAddGoal = (newGoal) => {
-        setGoals([...goals, { ...newGoal, id: Date.now() }]);
+    const handleAddGoal = async (newGoal) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            await supabase.from('goals').insert({
+                user_id: user.id,
+                title: newGoal.name,
+                target_amount: newGoal.targetAmount,
+                saved_amount: 0,
+                target_date: newGoal.deadline && /^\d{4}-\d{2}$/.test(newGoal.deadline)
+                    ? new Date(newGoal.deadline + '-01').toISOString().split('T')[0]
+                    : null,
+            });
+            await fetchGoals();
+        } catch (err) {
+            console.error('Goal insert error:', err);
+        }
         setIsPlannerOpen(false);
     };
 

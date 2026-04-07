@@ -232,7 +232,9 @@ begin
             from (
                 select sum(amount) as monthly_income
                 from public.transactions
-                where user_id = uid and type = 'income'
+                where user_id = uid
+                  and type = 'income'
+                  and transaction_date >= date_trunc('month', now()) - interval '3 months'
                 group by date_trunc('month', transaction_date::date)
             ) monthly_totals
         ) avg_monthly

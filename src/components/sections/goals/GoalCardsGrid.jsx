@@ -2,6 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, MoreHorizontal } from 'lucide-react';
 
+const ProgressRing = ({ progress, ringColor, icon, index }) => {
+    const r = 20;
+    const circ = 2 * Math.PI * r;
+    const dash = (Math.min(progress, 100) / 100) * circ;
+    return (
+        <div className="relative w-[54px] h-[54px] flex-shrink-0">
+            <svg width="54" height="54" className="absolute inset-0" style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                    cx="27" cy="27" r={r}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth="3"
+                />
+                <motion.circle
+                    cx="27" cy="27" r={r}
+                    fill="none"
+                    stroke={ringColor || '#3b82f6'}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    initial={{ strokeDasharray: `0 ${circ}` }}
+                    animate={{ strokeDasharray: `${dash} ${circ}` }}
+                    transition={{ duration: 1.2, delay: 0.2 + (index * 0.1), ease: 'easeOut' }}
+                />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center text-xl">
+                {icon}
+            </div>
+        </div>
+    );
+};
+
 const GoalCard = ({ goal, index }) => {
     const [justContributed, setJustContributed] = useState(false);
     const progress = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
@@ -30,11 +61,12 @@ const GoalCard = ({ goal, index }) => {
                 {/* Header */}
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${goal.color} p-[1px] transition-transform duration-200 group-hover:scale-[1.03]`}>
-                            <div className="w-full h-full bg-zinc-950/80 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm">
-                                {goal.icon}
-                            </div>
-                        </div>
+                        <ProgressRing
+                            progress={progress}
+                            ringColor={goal.ringColor}
+                            icon={goal.icon}
+                            index={index}
+                        />
                         <div>
                             <h3 className="text-white font-bold text-lg">{goal.name}</h3>
                             <p className="text-zinc-500 text-xs font-semibold">Deadline: {goal.deadline}</p>
@@ -86,14 +118,23 @@ const GoalCard = ({ goal, index }) => {
                         </span>
                     </div>
                     {!isCompleted && (
-                        <motion.div 
-                            animate={{ scale: [1, 1.03, 1] }}
-                            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]"
-                        >
-                            <span className="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider">Prob.</span>
-                            <span className="text-xs font-bold text-emerald-400">{goal.successProbability}%</span>
-                        </motion.div>
+                        goal.monthsLeft != null ? (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-800/60 border border-white/5">
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">ETA</span>
+                                <span className="text-xs font-bold text-zinc-300">
+                                {goal.monthsLeft <= 0 ? 'Goal Reached!' : `${Math.ceil(goal.monthsLeft)}mo`}
+                                </span>
+                            </div>
+                        ) : (
+                            <motion.div
+                                animate={{ scale: [1, 1.03, 1] }}
+                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]"
+                            >
+                                <span className="text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider">Prob.</span>
+                                <span className="text-xs font-bold text-emerald-400">{goal.successProbability}%</span>
+                            </motion.div>
+                        )
                     )}
                 </div>
 

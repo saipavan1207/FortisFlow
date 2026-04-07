@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, Legend } from 'recharts'
 import {
     LayoutDashboard,
     CreditCard,
@@ -341,28 +341,67 @@ const Dashboard = ({ isPreview = false }) => {
                         <Wallet className="w-5 h-5 text-blue-400" />
                         <h3 className="text-lg font-bold text-white leading-tight">Budget vs Actual</h3>
                     </div>
-                    {budgetsVsActual.length > 0 ? budgetsVsActual.map((b, i) => (
-                        <div key={i} className="mb-4 last:mb-0">
-                            <div className="flex justify-between items-center text-sm mb-1.5">
-                                <span className="text-zinc-300 font-medium flex items-center gap-2">
-                                    {b.category}
-                                    {b.usage_percentage > 100 && (
-                                        <span className="text-[10px] font-extrabold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
-                                            Over Budget
-                                        </span>
-                                    )}
-                                </span>
-                                <span className="text-zinc-400">₹{b.actual_spend} / ₹{b.monthly_limit}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(b.usage_percentage, 100)}%` }}
-                                    className={`h-full rounded-full ${b.usage_percentage > 90 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-blue-500'}`}
+                    {budgetsVsActual.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart
+                                data={budgetsVsActual.map(b => ({
+                                    category: b.category,
+                                    Budget: parseFloat(b.monthly_limit) || 0,
+                                    Actual: parseFloat(b.actual_spend) || 0,
+                                    overBudget: b.usage_percentage > 100
+                                }))}
+                                margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                                barCategoryGap="30%"
+                                barGap={4}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="category" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+                                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
+                                <Tooltip
+                                    cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                                    content={({ active, payload, label }) => {
+                                        if (!active || !payload?.length) return null;
+                                        const row = payload[0]?.payload;
+                                        return (
+                                            <div className="bg-[#12141c]/90 border border-white/10 p-3 rounded-xl shadow-2xl backdrop-blur-md">
+                                                <p className="text-white font-bold mb-2 flex items-center gap-2">
+                                                    {label}
+                                                    {row?.overBudget && (
+                                                        <span className="text-[10px] font-extrabold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                                            Over Budget
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                {payload.map((entry, i) => (
+                                                    <div key={i} className="flex items-center justify-between gap-4 text-xs mb-1">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                                            <span className="text-zinc-400 font-semibold">{entry.name}</span>
+                                                        </div>
+                                                        <span className="text-white font-bold">₹{entry.value.toLocaleString()}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }}
                                 />
-                            </div>
-                        </div>
-                    )) : (
+                                <Legend
+                                    iconType="circle"
+                                    iconSize={8}
+                                    wrapperStyle={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingTop: '8px' }}
+                                />
+                                <Bar dataKey="Budget" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={18} />
+                                <Bar dataKey="Actual" radius={[4, 4, 0, 0]} barSize={18}>
+                                    {budgetsVsActual.map((b, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={b.usage_percentage > 100 ? '#f43f5e' : (b.usage_percentage > 90 ? '#f59e0b' : '#34d399')}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
                         <p className="text-sm text-zinc-500">No active budgets this month. Setting limits helps control capital.</p>
                     )}
                 </motion.div>

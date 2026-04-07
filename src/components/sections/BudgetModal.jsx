@@ -159,6 +159,7 @@ const BudgetModal = ({ isOpen, onClose, onSave }) => {
                                                 <input
                                                     type="number"
                                                     min="1"
+                                                    step="0.01"
                                                     value={limit}
                                                     onChange={(e) => setLimit(e.target.value)}
                                                     placeholder="5000"

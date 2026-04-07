@@ -77,7 +77,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const Dashboard = ({ isPreview = false }) => {
-    const { loading, refresh, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
+    const { loading, refresh, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions, safeToSpend, budgetUsedPct } = useDashboardData(isPreview);
     const [budgetModalOpen, setBudgetModalOpen] = useState(false);
 
     if (loading && !isPreview) {
@@ -465,12 +465,24 @@ const Dashboard = ({ isPreview = false }) => {
                                 Spending Control
                             </h4>
                             <p className="text-xs sm:text-sm text-zinc-400 font-medium mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span>Safe to spend: <span className="text-white font-bold">₹3,200</span></span>
+                                <span>Safe to spend: <span className="text-white font-bold">₹{safeToSpend.toLocaleString('en-IN')}</span></span>
                                 <span className="hidden sm:inline text-zinc-600">•</span>
-                                <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                    On track
-                                </span>
+                                {budgetUsedPct > 100 ? (
+                                    <span className="text-rose-400 font-semibold bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20 flex items-center gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+                                        Over budget
+                                    </span>
+                                ) : budgetUsedPct > 80 ? (
+                                    <span className="text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                        At risk
+                                    </span>
+                                ) : (
+                                    <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                        On track
+                                    </span>
+                                )}
                             </p>
                         </div>
                     </div>
@@ -482,14 +494,14 @@ const Dashboard = ({ isPreview = false }) => {
                                 <div className="w-32 h-1.5 bg-black/50 rounded-full overflow-hidden ring-1 ring-white/10 shadow-inner relative">
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: "78%" }}
+                                        animate={{ width: `${Math.min(budgetUsedPct, 100)}%` }}
                                         transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.6)]"
+                                        className={`absolute top-0 bottom-0 left-0 rounded-full ${budgetUsedPct > 100 ? 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.6)]' : budgetUsedPct > 80 ? 'bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.6)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]'}`}
                                     >
                                         <div className="absolute right-0 top-0 bottom-0 w-3 bg-white/40 blur-[2px] rounded-full" />
                                     </motion.div>
                                 </div>
-                                <span className="text-xs text-white font-bold drop-shadow-md">78%</span>
+                                <span className="text-xs text-white font-bold drop-shadow-md">{budgetUsedPct}%</span>
                             </div>
                         </div>
 

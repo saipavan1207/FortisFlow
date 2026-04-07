@@ -35,6 +35,8 @@ export const useDashboardData = (isPreview = false) => {
                     { category: 'Food', monthly_limit: 2000, actual_spend: 1800, usage_percentage: 90 },
                     { category: 'Transport', monthly_limit: 1000, actual_spend: 900, usage_percentage: 90 }
                 ],
+                safeToSpend: 900,
+                budgetUsedPct: 85,
                 goalPredictions: [
                     { title: "Emergency Fund", target_amount: 10000, saved_amount: 5000, avg_monthly_saving: 1000, months_left: 5 },
                     { title: "Vacation", target_amount: 5000, saved_amount: 1000, avg_monthly_saving: 500, months_left: 8 }
@@ -56,6 +58,8 @@ export const useDashboardData = (isPreview = false) => {
             aiInsight: "Analyzing your data to uncover insights...",
             expenseTrend: { value: 0, label: "0%", trend: "neutral" },
             budgetsVsActual: [],
+            safeToSpend: 0,
+            budgetUsedPct: 0,
             goalPredictions: [],
             categoryTrends: []
         };
@@ -175,6 +179,11 @@ export const useDashboardData = (isPreview = false) => {
                     totalSpend += parseFloat(stat.expense) || 0;
                 });
 
+                // Safe to Spend computation
+                const totalBudget = (budgets || []).reduce((s, b) => s + (parseFloat(b.monthly_limit) || 0), 0);
+                const safeToSpend = Math.max(0, totalBudget - currentTotal);
+                const budgetUsedPct = totalBudget > 0 ? Math.round((currentTotal / totalBudget) * 100) : 0;
+
                 setData({
                     profile,
                     transactions: transactions || [],
@@ -190,6 +199,8 @@ export const useDashboardData = (isPreview = false) => {
                     aiInsight: "Analyzing your data to uncover insights...",
                     expenseTrend: localExpenseTrendObj,
                     budgetsVsActual: budgetsVsActual || [],
+                    safeToSpend,
+                    budgetUsedPct,
                     goalPredictions: goalPredictions || [],
                     categoryTrends: categoryTrends || []
                 });

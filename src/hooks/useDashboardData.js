@@ -101,25 +101,29 @@ export const useDashboardData = (isPreview = false) => {
                     categoryTrends 
                 } = await fetchDashboardData(user.id);
 
-                // STEP 1: Filter Transactions by Time Window bounds to latest data frame
-                const now = (transactions && transactions.length > 0) ? new Date(transactions[0].date) : new Date();
-                const last30DaysTransactions = [];
-                const prev30DaysTransactions = [];
+                // STEP 1: Filter Transactions by calendar month boundaries
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                const currentMonthTransactions = [];
+                const prevMonthTransactions = [];
 
                 (transactions || []).forEach(txn => {
                     const txnDate = new Date(txn.date);
-                    const diff = (now - txnDate) / (1000 * 60 * 60 * 24);
-                    if (diff <= 30) {
-                        last30DaysTransactions.push(txn);
-                    } else if (diff > 30 && diff <= 60) {
-                        prev30DaysTransactions.push(txn);
+                    const isCurrentMonth = txnDate >= startOfMonth && txnDate <= now;
+                    const isPrevMonth = txnDate >= startOfPrevMonth && txnDate <= endOfPrevMonth;
+                    if (isCurrentMonth) {
+                        currentMonthTransactions.push(txn);
+                    } else if (isPrevMonth) {
+                        prevMonthTransactions.push(txn);
                     }
                 });
 
                 // STEP 2 & 3: Aggregate by Category & Sort
                 const categoryTotals = {};
                 let currentTotal = 0;
-                last30DaysTransactions.forEach(txn => {
+                currentMonthTransactions.forEach(txn => {
                     if (txn.type === "expense") {
                         categoryTotals[txn.category] = (categoryTotals[txn.category] || 0) + txn.amount;
                         currentTotal += txn.amount;
@@ -127,7 +131,7 @@ export const useDashboardData = (isPreview = false) => {
                 });
 
                 let prevTotal = 0;
-                prev30DaysTransactions.forEach(txn => {
+                prevMonthTransactions.forEach(txn => {
                     if (txn.type === "expense") {
                         prevTotal += txn.amount;
                     }
@@ -146,7 +150,7 @@ export const useDashboardData = (isPreview = false) => {
                     color: 'bg-blue-500' 
                 }));
 
-                // STEP 8: Fix "No Change" UI Label (Compare last 30 vs prev 30)
+                // STEP 8: Fix "No Change" UI Label (Compare current month vs previous calendar month)
                 const localExpenseTrendObj = getSafePercentageChange(currentTotal, prevTotal);
 
                 // Legacy fallbacks for broader context

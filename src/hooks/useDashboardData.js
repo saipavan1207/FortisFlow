@@ -131,9 +131,22 @@ export const useDashboardData = (isPreview = false) => {
                 });
 
                 let prevTotal = 0;
+                const prevCategoryTotals = {};
                 prevMonthTransactions.forEach(txn => {
                     if (txn.type === "expense") {
                         prevTotal += txn.amount;
+                        prevCategoryTotals[txn.category] = (prevCategoryTotals[txn.category] || 0) + txn.amount;
+                    }
+                });
+
+                const prevCategoryBreakdown = Object.entries(prevCategoryTotals)
+                    .map(([name, amount]) => ({ name, amount }))
+                    .sort((a, b) => b.amount - a.amount);
+
+                let currentIncome = 0;
+                currentMonthTransactions.forEach(txn => {
+                    if (txn.type === "income") {
+                        currentIncome += txn.amount;
                     }
                 });
 
@@ -181,8 +194,12 @@ export const useDashboardData = (isPreview = false) => {
                 // Trigger AI generation (non-blocking) utilizing the explicit JS array temporal bounds mapped for UI parity
                 generateFinancialInsight({
                     monthlySpend: currentTotal,
+                    prevMonthSpend: prevTotal,
                     categoryBreakdown,
-                    expenseTrend: localExpenseTrendObj
+                    prevCategoryBreakdown,
+                    expenseTrend: localExpenseTrendObj,
+                    budgetsVsActual: budgetsVsActual || [],
+                    income: currentIncome
                 }).then(insight => {
                     setData(prev => ({ ...prev, aiInsight: insight }));
                 });

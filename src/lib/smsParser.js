@@ -111,7 +111,7 @@ function parseSingleSms(sms) {
     
     let category;
     try {
-        category = detectCategory(merchant);
+        category = detectCategory(sms);
     } catch {
         category = 'Other';
     }

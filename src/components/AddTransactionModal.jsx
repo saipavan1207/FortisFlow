@@ -4,11 +4,15 @@ import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { addTransaction } from '../services/transactions';
 
 const categories = [
-    { id: 'Food & Dining', label: 'Food & Dining' },
+    { id: 'Food', label: 'Food & Dining' },
     { id: 'Transport', label: 'Transport' },
     { id: 'Shopping', label: 'Shopping' },
-    { id: 'Bills', label: 'Bills' },
+    { id: 'Bills', label: 'Bills & Utilities' },
     { id: 'Housing', label: 'Housing' },
+    { id: 'Health', label: 'Health' },
+    { id: 'Subscriptions', label: 'Subscriptions' },
+    { id: 'Travel', label: 'Travel' },
+    { id: 'Income', label: 'Income' },
     { id: 'Other', label: 'Other' }
 ];
 
@@ -19,7 +23,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSuccess }) => {
 
     const [formData, setFormData] = useState({
         amount: '',
-        category: 'Food & Dining',
+        category: 'Food',
         merchant: '',
         description: '',
         date: new Date().toISOString().split('T')[0]
@@ -46,7 +50,7 @@ const AddTransactionModal = ({ isOpen, onClose, onSuccess }) => {
             // Success
             setFormData({
                 amount: '',
-                category: 'Food & Dining',
+                category: 'Food',
                 merchant: '',
                 description: '',
                 date: new Date().toISOString().split('T')[0]

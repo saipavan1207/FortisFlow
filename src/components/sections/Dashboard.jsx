@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import {
@@ -32,7 +32,8 @@ import {
 } from 'lucide-react'
 import { useDashboardData } from '../../hooks/useDashboardData'
 import { getSafePercentageChange } from '../../utils/formatters'
-
+import BudgetModal from '../BudgetModal'
+import { GoalGrid } from '../goals/GoalGrid'
 const spendingData = [
     { month: 'Jan', amount: 4500, active: false },
     { month: 'Feb', amount: 5200, active: false },
@@ -78,6 +79,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 const Dashboard = ({ isPreview = false }) => {
     const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
 
+    const [monthlyBudget, setMonthlyBudget] = useState(() => {
+        const saved = localStorage.getItem('monthlyBudget');
+        return saved ? parseFloat(saved) : 14500;
+    });
+    const currentSpending = 11300;
+    const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+    
+    useEffect(() => {
+        localStorage.setItem('monthlyBudget', monthlyBudget.toString());
+    }, [monthlyBudget]);
+
+    const safeToSpend = monthlyBudget - currentSpending;
+    const usedPercentage = (currentSpending / monthlyBudget) * 100;
+    const isWarning = usedPercentage > 90;
+
     if (loading && !isPreview) {
         return (
             <div className="flex w-full items-center justify-center py-20">
@@ -88,7 +104,7 @@ const Dashboard = ({ isPreview = false }) => {
 
     const displayStats = isPreview ? { monthlySpend: 8240.50 } : { monthlySpend: spendingStats?.monthlySpend || 0 };
 
-    const score = Math.round(financialHealth || 0);
+    const score = Math.round(financialHealth?.score || 0);
     let healthLabel = 'Bad';
     let healthColor = 'text-rose-400';
     let healthBg = 'bg-rose-500/10';
@@ -148,8 +164,16 @@ const Dashboard = ({ isPreview = false }) => {
                     <div className="flex items-start justify-between">
                         <div className="space-y-1">
                             <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Financial Health</p>
-                            <div className="flex items-baseline gap-2">
-                                <h2 className="text-2xl font-bold text-white">{score}<span className="text-base text-zinc-600 font-medium">/100</span></h2>
+                            <div className="flex items-baseline gap-2 relative group/score">
+                                <h2 className="text-2xl font-bold text-white cursor-help border-b border-dashed border-zinc-500/50 pb-0.5">{score}<span className="text-base text-zinc-600 font-medium border-none pb-0">/100</span></h2>
+                                {/* Popover Tooltip */}
+                                <div className="absolute left-0 top-full mt-2 w-max opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all duration-300 z-50">
+                                    <div className="bg-[#1a1f2e] border border-white/10 rounded-lg p-3 shadow-xl backdrop-blur-xl">
+                                        <p className="text-sm text-zinc-300 font-medium whitespace-nowrap">
+                                            Savings rate: <span className="text-white font-bold">{financialHealth?.savings_rate_score || 0}/40</span> | Goals: <span className="text-white font-bold">{financialHealth?.goals_progress_score || 0}/30</span> | Budget: <span className="text-white font-bold">{financialHealth?.budget_adherence_score || 0}/30</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/5 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-colors">
@@ -424,11 +448,11 @@ const Dashboard = ({ isPreview = false }) => {
                                 Spending Control
                             </h4>
                             <p className="text-xs sm:text-sm text-zinc-400 font-medium mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span>Safe to spend: <span className="text-white font-bold">₹3,200</span></span>
+                                <span>Safe to spend: <span className="text-white font-bold">₹{safeToSpend.toLocaleString()}</span></span>
                                 <span className="hidden sm:inline text-zinc-600">•</span>
-                                <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                    On track
+                                <span className={`${isWarning ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'} font-semibold px-2 py-0.5 rounded-full border flex items-center gap-1`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isWarning ? 'bg-rose-400' : 'bg-emerald-400'} animate-pulse`} />
+                                    {isWarning ? 'Warning' : 'On track'}
                                 </span>
                             </p>
                         </div>
@@ -441,18 +465,21 @@ const Dashboard = ({ isPreview = false }) => {
                                 <div className="w-32 h-1.5 bg-black/50 rounded-full overflow-hidden ring-1 ring-white/10 shadow-inner relative">
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: "78%" }}
+                                        animate={{ width: `${Math.min(usedPercentage, 100)}%` }}
                                         transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.6)]"
+                                        className={`absolute top-0 bottom-0 left-0 ${isWarning ? 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.6)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]'} rounded-full`}
                                     >
                                         <div className="absolute right-0 top-0 bottom-0 w-3 bg-white/40 blur-[2px] rounded-full" />
                                     </motion.div>
                                 </div>
-                                <span className="text-xs text-white font-bold drop-shadow-md">78%</span>
+                                <span className="text-xs text-white font-bold drop-shadow-md">{Math.round(usedPercentage)}%</span>
                             </div>
                         </div>
 
-                        <button className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden">
+                        <button 
+                            onClick={() => setIsBudgetModalOpen(true)}
+                            className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden"
+                        >
                             <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
                             <span className="relative z-10">Adjust Budget</span>
                             <Settings className="w-4 h-4 text-zinc-700 group-hover/btn:rotate-90 transition-transform duration-500 relative z-10" />
@@ -460,6 +487,24 @@ const Dashboard = ({ isPreview = false }) => {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Goal Cards Module */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+                className="w-full relative z-10"
+            >
+                <GoalGrid />
+            </motion.div>
+
+            {/* Budget Modal */}
+            <BudgetModal
+                isOpen={isBudgetModalOpen}
+                onClose={() => setIsBudgetModalOpen(false)}
+                currentBudget={monthlyBudget}
+                onSave={setMonthlyBudget}
+            />
         </div>
     )
 }

@@ -2,20 +2,46 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Target, Calendar, Sparkles, Wand2 } from 'lucide-react';
 
-const GoalPlannerModal = ({ isOpen, onClose, onSave }) => {
+interface GoalPlannerModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (goalData: { title: string; target_amount: number; deadline: string; icon: string; color_preset: string; }) => void;
+}
+
+const presetColors = ['blue', 'green', 'purple', 'orange', 'red'];
+const presetIcons = ['target', 'laptop', 'shield', 'plane'];
+
+const GoalPlannerModal: React.FC<GoalPlannerModalProps> = ({ isOpen, onClose, onSave }) => {
     const [name, setName] = useState('');
     const [targetAmount, setTargetAmount] = useState('');
     const [deadline, setDeadline] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [aiPlan, setAiPlan] = useState(null);
+    
+    // simple fallback colors/icons since we don't have a picker yet
+    const resolveColor = (name: string) => {
+        if(name.toLowerCase().includes('travel') || name.toLowerCase().includes('vacation')) return 'purple';
+        if(name.toLowerCase().includes('emergency')) return 'green';
+        if(name.toLowerCase().includes('car')) return 'red';
+        return 'blue';
+    };
+
+    const resolveIcon = (name: string) => {
+        if(name.toLowerCase().includes('travel') || name.toLowerCase().includes('vacation')) return 'plane';
+        if(name.toLowerCase().includes('emergency')) return 'shield';
+        if(name.toLowerCase().includes('laptop') || name.toLowerCase().includes('computer')) return 'laptop';
+        return 'target';
+    };
+
+    const [aiPlan, setAiPlan] = useState<{ monthlySaving: number; successProbability: number; suggestions: string[] } | null>(null);
 
     const handleGeneratePlan = () => {
         if (!name || !targetAmount || !deadline) return;
         setIsGenerating(true);
         // Simulate API call to AI service
         setTimeout(() => {
+            const monthsToDeadline = Math.max(1, (new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30));
             setAiPlan({
-                monthlySaving: Math.ceil(targetAmount / 12), // Rough estimate
+                monthlySaving: Math.ceil(Number(targetAmount) / monthsToDeadline), 
                 successProbability: 84,
                 suggestions: [
                     "Reduce food delivery by ₹1,500/month",
@@ -29,19 +55,18 @@ const GoalPlannerModal = ({ isOpen, onClose, onSave }) => {
 
     const handleSave = () => {
         onSave({
-            name,
-            targetAmount: Number(targetAmount),
-            savedAmount: 0,
-            deadline,
-            successProbability: aiPlan ? aiPlan.successProbability : 50,
-            icon: '🎯',
-            color: 'from-blue-500 to-indigo-600'
+            title: name,
+            target_amount: Number(targetAmount),
+            deadline: new Date(deadline).toISOString().split('T')[0],
+            icon: resolveIcon(name),
+            color_preset: resolveColor(name)
         });
         // Reset state
         setName('');
         setTargetAmount('');
         setDeadline('');
         setAiPlan(null);
+        onClose();
     };
 
     return (

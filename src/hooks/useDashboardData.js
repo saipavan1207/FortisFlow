@@ -20,7 +20,7 @@ export const useDashboardData = (isPreview = false) => {
                     { name: 'Travel', amount: 1400 },
                     { name: 'Entertainment', amount: 1200 }
                 ],
-                financialHealth: 78,
+                financialHealth: { score: 78, savings_rate_score: 30, goals_progress_score: 20, budget_adherence_score: 28 },
                 monthlyStatsData: [
                     { month: "Jan", income: 5000, expense: 2000 },
                     { month: "Feb", income: 5200, expense: 2500 },
@@ -49,7 +49,7 @@ export const useDashboardData = (isPreview = false) => {
             budgets: [],
             spendingStats: { totalSpend: 0, monthlySpend: 0, dailyAverage: 0 },
             categoryBreakdown: [],
-            financialHealth: 0,
+            financialHealth: { score: 0, savings_rate_score: 0, goals_progress_score: 0, budget_adherence_score: 0 },
             monthlyStatsData: [],
             aiInsight: "Analyzing your data to uncover insights...",
             expenseTrend: { value: 0, label: "0%", trend: "neutral" },
@@ -165,7 +165,7 @@ export const useDashboardData = (isPreview = false) => {
                         dailyAverage: currentTotal / 30 
                     },
                     categoryBreakdown,
-                    financialHealth: parseFloat(healthScore) || 0,
+                    financialHealth: (typeof healthScore === 'object' && healthScore !== null) ? healthScore : { score: parseFloat(healthScore) || 0, savings_rate_score: 0, goals_progress_score: 0, budget_adherence_score: 0 },
                     monthlyStatsData: monthlyStatsData || [],
                     aiInsight: "Analyzing your data to uncover insights...",
                     expenseTrend: localExpenseTrendObj,

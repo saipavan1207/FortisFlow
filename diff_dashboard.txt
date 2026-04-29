@@ -1,0 +1,131 @@
+diff --git a/src/components/sections/Dashboard.jsx b/src/components/sections/Dashboard.jsx
+index 7066166..194bcbc 100644
+--- a/src/components/sections/Dashboard.jsx
++++ b/src/components/sections/Dashboard.jsx
+@@ -1,5 +1,8 @@
+-import React from 'react'
++import React, { useState } from 'react'
+ import { motion } from 'framer-motion'
++import { BudgetModal } from '../analytics/BudgetModal'
++import { BudgetVsActual } from '../analytics/BudgetVsActual'
++import { SpendingControl } from '../analytics/SpendingControl'
+ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
+ import {
+     LayoutDashboard,
+@@ -77,6 +80,8 @@ const CustomTooltip = ({ active, payload, label }) => {
+ 
+ const Dashboard = ({ isPreview = false }) => {
+     const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
++    const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
++    const [refreshBudget, setRefreshBudget] = useState(false);
+ 
+     if (loading && !isPreview) {
+         return (
+@@ -335,36 +340,9 @@ const Dashboard = ({ isPreview = false }) => {
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.4, delay: 0.5 }}
+-                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
++                    className="h-full"
+                 >
+-                    <div className="flex items-center gap-2 mb-4">
+-                        <Wallet className="w-5 h-5 text-blue-400" />
+-                        <h3 className="text-lg font-bold text-white leading-tight">Budget vs Actual</h3>
+-                    </div>
+-                    {budgetsVsActual.length > 0 ? budgetsVsActual.map((b, i) => (
+-                        <div key={i} className="mb-4 last:mb-0">
+-                            <div className="flex justify-between items-center text-sm mb-1.5">
+-                                <span className="text-zinc-300 font-medium flex items-center gap-2">
+-                                    {b.category}
+-                                    {b.usage_percentage > 100 && (
+-                                        <span className="text-[10px] font-extrabold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
+-                                            Over Budget
+-                                        </span>
+-                                    )}
+-                                </span>
+-                                <span className="text-zinc-400">₹{b.actual_spend} / ₹{b.monthly_limit}</span>
+-                            </div>
+-                            <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden">
+-                                <motion.div
+-                                    initial={{ width: 0 }}
+-                                    animate={{ width: `${Math.min(b.usage_percentage, 100)}%` }}
+-                                    className={`h-full rounded-full ${b.usage_percentage > 90 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-blue-500'}`}
+-                                />
+-                            </div>
+-                        </div>
+-                    )) : (
+-                        <p className="text-sm text-zinc-500">No active budgets this month. Setting limits helps control capital.</p>
+-                    )}
++                    <BudgetVsActual refresh={refreshBudget} onOpenModal={() => setIsBudgetModalOpen(true)} />
+                 </motion.div>
+ 
+                 {/* Goal Predictions */}
+@@ -405,61 +383,14 @@ const Dashboard = ({ isPreview = false }) => {
+                 transition={{ duration: 0.5, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                 className="w-full relative group"
+             >
+-                {/* Glow Behind Card */}
+-                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-blue-500/20 rounded-[24px] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+-
+-                <div className="relative w-full bg-[#0A0F1C]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-5 shadow-2xl overflow-hidden">
+-                    {/* Ambient Light inside card */}
+-                    <div className="absolute top-0 left-1/4 w-1/2 h-full bg-emerald-500/5 blur-[50px] rounded-full pointer-events-none" />
+-
+-                    <div className="flex items-center gap-4 relative z-10 w-full md:w-auto">
+-                        <div className="relative shrink-0">
+-                            <div className="absolute inset-0 bg-emerald-500/40 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+-                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center ring-1 ring-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] relative z-10">
+-                                <ShieldCheck className="w-6 h-6 text-white drop-shadow-md" />
+-                            </div>
+-                        </div>
+-                        <div className="flex-1">
+-                            <h4 className="text-white font-bold text-lg sm:text-xl tracking-tight flex items-center gap-2">
+-                                Spending Control
+-                            </h4>
+-                            <p className="text-xs sm:text-sm text-zinc-400 font-medium mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+-                                <span>Safe to spend: <span className="text-white font-bold">₹3,200</span></span>
+-                                <span className="hidden sm:inline text-zinc-600">•</span>
+-                                <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+-                                    On track
+-                                </span>
+-                            </p>
+-                        </div>
+-                    </div>
+-
+-                    <div className="flex items-center gap-5 sm:gap-5 w-full md:w-auto justify-between md:justify-end relative z-10">
+-                        <div className="hidden sm:flex flex-col items-end justify-center mr-2">
+-                            <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Budget Used</div>
+-                            <div className="flex items-center gap-2.5">
+-                                <div className="w-32 h-1.5 bg-black/50 rounded-full overflow-hidden ring-1 ring-white/10 shadow-inner relative">
+-                                    <motion.div
+-                                        initial={{ width: 0 }}
+-                                        animate={{ width: "78%" }}
+-                                        transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+-                                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.6)]"
+-                                    >
+-                                        <div className="absolute right-0 top-0 bottom-0 w-3 bg-white/40 blur-[2px] rounded-full" />
+-                                    </motion.div>
+-                                </div>
+-                                <span className="text-xs text-white font-bold drop-shadow-md">78%</span>
+-                            </div>
+-                        </div>
+-
+-                        <button className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden">
+-                            <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
+-                            <span className="relative z-10">Adjust Budget</span>
+-                            <Settings className="w-4 h-4 text-zinc-700 group-hover/btn:rotate-90 transition-transform duration-500 relative z-10" />
+-                        </button>
+-                    </div>
+-                </div>
++                <SpendingControl refresh={refreshBudget} onOpenModal={() => setIsBudgetModalOpen(true)} />
+             </motion.div>
++
++            <BudgetModal 
++                isOpen={isBudgetModalOpen} 
++                onClose={() => setIsBudgetModalOpen(false)} 
++                onSuccess={() => setRefreshBudget(p => !p)} 
++            />
+         </div>
+     )
+ }

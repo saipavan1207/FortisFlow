@@ -1,8 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-
+// The Gemini API key is now securely stored on the backend.
+// We call our Netlify serverless function instead of directly using the SDK here.
 export const generateFinancialInsight = async (dashboardData) => {
     try {
         const { monthlySpend, categoryBreakdown, expenseTrend } = dashboardData;
@@ -31,27 +28,19 @@ export const generateFinancialInsight = async (dashboardData) => {
 
         const defaultInsight = `• Spending ${semantic} (₹${spendFormatted})\n• ${topCatStr} dominates. ${actionStr}.`;
 
-        if (!genAI) return defaultInsight;
+        // Securely call the backend Netlify function
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const prompt = `
-You are a financial assistant.
-Data:
-Trend string: ${semantic} (₹${spendFormatted})
-Top category: ${topCatStr}
-Action context: ${actionStr}
+        if (!response.ok) {
+            throw new Error(`Backend AI failed with status ${response.status}`);
+        }
 
-Rules:
-- Give exactly 2 bullets separated by a newline.
-- Format strictly as follows:
-• Spending [Trend string] ([Spend string] vs last month)
-• [Top category] dominates. [Rewrite action context into 3-4 words max].
-
-Do not use bolding or markdown. No introduction.
-        `.trim();
-
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text().trim();
+        const result = await response.json();
+        const responseText = result.text;
         
         if (responseText && responseText.includes('•')) {
             return responseText;
@@ -92,22 +81,19 @@ export const generateAnalyticsInsight = async (analyticsData) => {
 
         const defaultInsight = `Your net savings are ₹${netSavings.toLocaleString('en-IN')}. Highest spending is on ${topCat} (₹${topCatAmount.toLocaleString('en-IN')}).`;
 
-        if (!genAI) return defaultInsight;
+        // Securely call the backend Netlify function
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const prompt = `
-You are a concise financial advisor.
-Data:
-Net Savings: ₹${netSavings}
-Top Spending Category: ${topCat} (₹${topCatAmount})
-Total Income: ₹${kpis.total_income}
-Total Expense: ₹${kpis.total_expense}
+        if (!response.ok) {
+            throw new Error(`Backend AI failed with status ${response.status}`);
+        }
 
-Write exactly ONE short, encouraging, and highly specific sentence summarizing this and giving a quick tip. No markdown, no bullet points.
-        `.trim();
-
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text().trim();
+        const result = await response.json();
+        const responseText = result.text;
         
         return responseText || defaultInsight;
 

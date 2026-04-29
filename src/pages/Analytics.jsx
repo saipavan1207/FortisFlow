@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download, Sparkles, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 
 import AnalyticsFilters from '../components/analytics/AnalyticsFilters';
@@ -19,7 +18,7 @@ const Analytics = () => {
     });
 
     const reportRef = useRef(null);
-    const { data, insight, loading, error, hasData, transactions } = useAnalyticsData(filters);
+    const { data, loading, error, hasData, transactions } = useAnalyticsData(filters);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userId, setUserId] = useState(null);
 

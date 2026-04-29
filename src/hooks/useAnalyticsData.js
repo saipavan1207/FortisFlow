@@ -183,7 +183,7 @@ export const useAnalyticsData = (filters) => {
         }, 1500);
 
         return () => clearTimeout(timeoutId);
-    }, [data.kpis.total_income, data.kpis.total_expense, txLoading]);
+    }, [data.kpis, data.timeSeries, data.categoryBreakdown, data.subcategoryBreakdown, txLoading, transactions]);
 
     return {
         data,

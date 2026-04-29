@@ -14,7 +14,6 @@ export const useDashboardData = () => {
     const { transactions, loading: txLoading } = useRealtimeTransactions(userId);
 
     const [aiInsight, setAiInsight] = useState('');
-    const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
 
     // ── Fetch user identity + semi-static data once ──────────────────────────
     useEffect(() => {
@@ -185,12 +184,12 @@ export const useDashboardData = () => {
     // ── AI Insight (debounced, only fires when real data exists) ─────────────
     useEffect(() => {
         if (txLoading || !transactions || transactions.length === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setAiInsight('Add transactions to unlock AI-powered financial insights.');
             return;
         }
 
         const timeoutId = setTimeout(async () => {
-            setIsGeneratingInsight(true);
             try {
                 const insight = await generateFinancialInsight({
                     monthlySpend: dynamicData.spendingStats.monthlySpend,
@@ -201,13 +200,11 @@ export const useDashboardData = () => {
             } catch (err) {
                 console.error('Failed to generate AI insight', err);
                 setAiInsight('Unable to generate insight right now.');
-            } finally {
-                setIsGeneratingInsight(false);
             }
         }, 1500);
 
         return () => clearTimeout(timeoutId);
-    }, [dynamicData.spendingStats.monthlySpend, dynamicData.expenseTrend?.value, txLoading]);
+    }, [dynamicData.spendingStats.monthlySpend, dynamicData.categoryBreakdown, dynamicData.expenseTrend, txLoading, transactions]);
 
     return {
         loading: staticLoading || txLoading,

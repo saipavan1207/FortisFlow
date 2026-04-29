@@ -94,26 +94,26 @@ const getCategoryEmoji = (category) => {
 };
 
 const Dashboard = () => {
-    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions, profile, transactions } = useDashboardData();
+    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, profile, transactions } = useDashboardData();
     const { activeGoals } = useGoalsData();
 
     const currentSpending = spendingStats?.monthlySpend || 0;
     const hasData = transactions && transactions.length > 0;
 
     const [monthlyBudget, setMonthlyBudget] = useState(0);
-    const [isBudgetLoaded, setIsBudgetLoaded] = useState(false);
 
     useEffect(() => {
-        if (profile?.id && !isBudgetLoaded) {
+        if (profile?.id) {
             const saved = localStorage.getItem(`monthlyBudget_${profile.id}`);
             if (profile.monthly_budget) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setMonthlyBudget(profile.monthly_budget);
             } else if (saved) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setMonthlyBudget(parseFloat(saved));
             }
-            setIsBudgetLoaded(true);
         }
-    }, [profile?.id, profile?.monthly_budget, isBudgetLoaded]);
+    }, [profile]);
 
     const handleSaveBudget = async (newBudget) => {
         setMonthlyBudget(newBudget);

@@ -1,3 +1,5 @@
+/* global require, exports, process */
+/* eslint-disable no-unused-vars */
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async function (event, context) {

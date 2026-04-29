@@ -196,7 +196,7 @@ const DownloadReportModal = ({ isOpen, onClose, userId }) => {
                         }
                     }
                 },
-                didDrawPage: function (data) {
+                didDrawPage: function () {
                     const pageStr = 'Page ' + pdf.internal.getNumberOfPages();
                     pdf.setFontSize(8);
                     pdf.setTextColor(150);

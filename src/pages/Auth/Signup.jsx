@@ -292,7 +292,7 @@ const Signup = () => {
                 email,
                 password,
                 options: {
-                    emailRedirectTo: undefined,
+                    emailRedirectTo: `${window.location.origin}/dashboard`,
                     data: {
                         full_name: username, // Saving as full_name for compatibility
                         username: username

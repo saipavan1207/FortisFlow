@@ -1,0 +1,126 @@
+﻿
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\App.jsx
+  2:50  error  'useNavigate' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\api\analyticsRoutes.js
+   9:9   error  'process' is not defined  no-undef
+  10:9   error  'process' is not defined  no-undef
+  11:13  error  'process' is not defined  no-undef
+  12:13  error  'process' is not defined  no-undef
+  13:18  error  'process' is not defined  no-undef
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\BudgetModal.jsx
+  14:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  12 |     useEffect(() => {
+  13 |         if (isOpen) {
+> 14 |             setValue(currentBudget.toString());
+     |             ^^^^^^^^ Avoid calling setState() directly within an effect
+  15 |             setError('');
+  16 |             // Focus the input after mount animation
+  17 |             const timer = setTimeout(() => inputRef.current?.focus(), 150);  react-hooks/set-state-in-effect
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\ImportSmsModal.jsx
+  152:12  error  'bank' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
+  152:18  error  'setBank' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  158:12  error  'successMsg' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  212:18  error  'err' is defined but never used                                                             no-unused-vars
+  253:38  error  'count' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u       no-unused-vars
+  403:51  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                             react/no-unescaped-entities
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\common\UserMenu.jsx
+  14:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  12 |         // If preview (landing page), use mock data
+  13 |         if (isPreview) {
+> 14 |             setUser({
+     |             ^^^^^^^ Avoid calling setState() directly within an effect
+  15 |                 email: 'demo@fortisflow.com',
+  16 |                 user_metadata: { full_name: 'Demo User' }
+  17 |             })  react-hooks/set-state-in-effect
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\layout\DashboardLayout.jsx
+   1:17  error  'useEffect' is defined but never used. Allowed unused vars must match /^[A-Z_]/u          no-unused-vars
+   3:10  error  'supabase' is defined but never used. Allowed unused vars must match /^[A-Z_]/u           no-unused-vars
+  34:11  error  'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\layout\Navbar.jsx
+  12:11  error  'isActive' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\sections\Dashboard.jsx
+  37:7  error  'spendingData' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\sections\Testimonials.jsx
+  1:27  error  'useRef' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\components\sections\cards\AccountCard.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\hooks\useDashboardData.js
+   96:33  error    'topCategoriesData' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u             no-unused-vars
+   98:21  error    'expenseTrend' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                  no-unused-vars
+  194:8   warning  React Hook useEffect has a missing dependency: 'isPreview'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Auth\Login.jsx
+  308:21  error  'data' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Auth\Signup.jsx
+  291:21  error  'data' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  364:21  error  'data' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\SolutionPage.jsx
+  231:109  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\src\pages\Transactions.jsx
+  48:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  46 |
+  47 |     useEffect(() => {
+> 48 |         fetchTransactions();
+     |         ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |     }, [fetchTransactions]);
+  50 |
+  51 |     // Reset pagination when filters or search change                                     react-hooks/set-state-in-effect
+  53:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  51 |     // Reset pagination when filters or search change
+  52 |     useEffect(() => {
+> 53 |         setCurrentPage(1);
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  54 |     }, [filters, debouncedSearch]);
+  55 |
+  56 |     // Delete single transaction  react-hooks/set-state-in-effect
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\test-gemini.js
+  5:17  error  'process' is not defined  no-undef
+  9:3   error  'process' is not defined  no-undef
+
+C:\Users\lenovo\.gemini\antigravity\scratch\FortisFlow\testDate.js
+  1:8  error  'fs' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+Γ£û 33 problems (32 errors, 1 warning)
+

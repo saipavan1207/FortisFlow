@@ -15,10 +15,17 @@ export interface GoalRecord {
   icon: string;
   color_preset: GoalColorPreset;
   deadline: string;         // ISO date
-  status: 'active' | 'completed' | 'paused';
+  status: 'active' | 'completed' | 'paused' | 'archived';
   priority: number;
   created_at: string;
+  completed_at?: string;
   contributions: GoalContribution[];
+}
+
+export interface GoalHistory {
+  completedDate: string;
+  timeTakenDays: number;
+  performance: 'Ahead of Schedule' | 'On Time' | 'Delayed';
 }
 
 export interface GoalAnalytics {

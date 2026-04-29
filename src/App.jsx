@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import Navbar from './components/layout/Navbar'
 import Hero from './components/sections/Hero'
@@ -15,6 +15,7 @@ import Dashboard from './components/sections/Dashboard'
 import Transactions from './pages/Transactions'
 import Cards from './pages/Cards'
 import Goals from './pages/Goals'
+import Analytics from './pages/Analytics'
 import AuthGuard from './components/layout/AuthGuard'
 import DashboardLayout from './components/layout/DashboardLayout'
 
@@ -73,6 +74,7 @@ function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/cards" element={<Cards />} />
           <Route path="/goals" element={<Goals />} />
+          <Route path="/analytics" element={<Analytics />} />
         </Route>
       </Routes>
     </Router>

@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { Plus, Target, CalendarDays, Brain, Sparkles, Laptop, ShieldCheck, Plane, Zap, TrendingUp, Clock, AlertTriangle, Loader2 } from 'lucide-react';
 import { GlowCard } from '../ui/spotlight-card';
 import { GoalUIModel } from '../../types/goals';
+import { getGoalHistory } from '../../utils/goalCalculations';
 
 interface GoalCardProps {
   goal: GoalUIModel;
   onContribute: (id: string, amount: number) => void;
+  onArchive?: (id: string) => void;
   isContributing?: boolean;
 }
 
@@ -85,18 +87,19 @@ const getInsightMessage = (
   return <>Start contributing to unlock your tailored savings forecast.</>;
 };
 
-export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, isContributing = false }) => {
-  const { id, title, target_amount, saved_amount, deadline, icon, glowType, theme, analytics } = goal;
+export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, onArchive, isContributing = false }) => {
+  const { id, title, target_amount, saved_amount, deadline, icon, glowType, theme, analytics, status } = goal;
 
   const currentAmount = Number(saved_amount) || 0;
   const targetAmount = Number(target_amount) || 0;
-  const remaining = targetAmount - currentAmount;
+  const remaining = Math.max(targetAmount - currentAmount, 0);
 
   const estimatedDays = analytics.estimatedDaysLeft;
   const progress = analytics.progress;
   const isPassed = new Date(deadline).getTime() < Date.now();
   const probLabel = getProbabilityLabel(analytics.probability, isPassed && progress < 100);
-  const isComplete = progress >= 100;
+  const isComplete = status === 'completed' || progress >= 100;
+  const history = isComplete ? getGoalHistory(goal) : null;
 
   return (
     <GlowCard
@@ -126,13 +129,22 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, isContri
             </div>
           </div>
 
-          {/* Probability badge */}
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] border border-white/[0.08] rounded-full group-hover:border-white/15 transition-all`}>
-              <Zap className={`w-3 h-3 ${probLabel.color}`} />
-              <span className={`text-[11px] font-black ${probLabel.color} tracking-wide`}>{Math.round(analytics.probability)}%</span>
-            </div>
-            <span className={`text-[10px] font-bold ${probLabel.color} opacity-70`}>{probLabel.text}</span>
+          {/* Probability badge or History Performance badge */}
+          <div className="flex flex-col items-end gap-1 shrink-0 group/badge relative">
+            {isComplete ? (
+               <div className={`flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full`}>
+                 <Sparkles className="w-3 h-3 text-emerald-400" />
+                 <span className="text-[11px] font-black text-emerald-400 tracking-wide">Achieved</span>
+               </div>
+            ) : (
+               <>
+                 <div className={`flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] border border-white/[0.08] rounded-full group-hover/badge:border-white/15 transition-all`}>
+                   <Zap className={`w-3 h-3 ${probLabel.color}`} />
+                   <span className={`text-[11px] font-black ${probLabel.color} tracking-wide`}>{Math.round(analytics.probability)}%</span>
+                 </div>
+                 <span className={`text-[10px] font-bold ${probLabel.color} opacity-70`}>{probLabel.text}</span>
+               </>
+            )}
           </div>
         </div>
 
@@ -181,69 +193,112 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, isContri
           )}
         </div>
 
-        {/* ── AI Insight Box ── */}
-        <div className="bg-white/[0.02] backdrop-blur-md rounded-2xl p-4 border border-white/[0.06] group-hover:border-white/[0.10] transition-all duration-300 relative overflow-hidden">
-          {/* Subtle top gradient line */}
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+        {/* ── Dynamic Box (AI Insight or History) ── */}
+        <div className={`backdrop-blur-md rounded-2xl p-4 border transition-all duration-300 relative overflow-hidden ${
+          isComplete 
+           ? 'bg-emerald-900/10 border-emerald-500/20 group-hover:border-emerald-500/30' 
+           : 'bg-white/[0.02] border-white/[0.06] group-hover:border-white/[0.10]'
+        }`}>
+          {isComplete && history ? (
+            // --- HISTORICAL COMPLETED DATA --- 
+            <div className="flex gap-4 items-center">
+              <div className="flex-1 space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Completed Date</p>
+                <p className="text-[13px] font-semibold text-zinc-200">{history.completedDate}</p>
+              </div>
+              <div className="h-8 w-px bg-white/10" />
+              <div className="flex-1 space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Time Taken</p>
+                <p className="text-[13px] font-semibold text-zinc-200">{history.timeTakenDays} days</p>
+              </div>
+              <div className="h-8 w-px bg-white/10" />
+              <div className="flex-1 space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Performance</p>
+                <p className={`text-[12px] font-bold ${
+                  history.performance === 'Ahead of Schedule' ? 'text-emerald-400' :
+                  history.performance === 'On Time' ? 'text-blue-400' : 'text-amber-400'
+                }`}>{history.performance}</p>
+              </div>
+            </div>
+          ) : (
+            // --- AI INSIGHT BOX ---
+            <>
+              {/* Subtle top gradient line */}
+              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
-          <div className="flex gap-3">
-            <div className="shrink-0 mt-0.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Brain className="w-3.5 h-3.5 text-blue-400" />
+              <div className="flex gap-3">
+                <div className="shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                    <Brain className="w-3.5 h-3.5 text-blue-400" />
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-400/80">AI Insight</span>
+                    <span className="w-1 h-1 rounded-full bg-blue-500/50" />
+                    <Clock className="w-3 h-3 text-zinc-600" />
+                    <span className="text-[10px] text-zinc-600 font-medium">Now</span>
+                  </div>
+                  <p className="text-[12.5px] text-zinc-300 leading-relaxed">
+                    {getInsightMessage(estimatedDays, analytics.probability, title, deadline)}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400/80">AI Insight</span>
-                <span className="w-1 h-1 rounded-full bg-blue-500/50" />
-                <Clock className="w-3 h-3 text-zinc-600" />
-                <span className="text-[10px] text-zinc-600 font-medium">Now</span>
-              </div>
-              <p className="text-[12.5px] text-zinc-300 leading-relaxed">
-                {getInsightMessage(estimatedDays, analytics.probability, title, deadline)}
-              </p>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
-        {/* ── Contribute Button ── */}
-        <motion.button
-          whileHover={isComplete || isContributing ? {} : { scale: 1.015, y: -1 }}
-          whileTap={isComplete || isContributing ? {} : { scale: 0.97 }}
-          onClick={() => onContribute(id, 1000)}
-          disabled={isComplete || isContributing}
-          className={`
-            w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-[14px]
-            transition-all duration-200 relative overflow-hidden mt-auto
-            ${isComplete
-              ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800'
-              : isContributing 
-                ? 'bg-zinc-800 text-zinc-400 cursor-wait border border-white/5'
-                : 'bg-white text-zinc-900 hover:bg-zinc-100 shadow-[0_4px_24px_rgba(255,255,255,0.08)] hover:shadow-[0_4px_32px_rgba(255,255,255,0.15)]'
-            }
-          `}
-        >
-          {!(isComplete || isContributing) && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+        {/* ── Action Buttons ── */}
+        <div className="flex items-center gap-2 mt-auto">
+          {isComplete && onArchive && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onArchive(id)}
+              className="py-3.5 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-rose-400 hover:border-rose-900/50 transition-colors"
+            >
+              Archive
+            </motion.button>
           )}
-          {isComplete ? (
-            <>
-              <Sparkles className="w-4 h-4 text-emerald-500" />
-              <span className="text-zinc-400">Goal Completed</span>
-            </>
-          ) : isContributing ? (
-            <>
-              <Loader2 className="w-4 h-4 text-zinc-400 animate-spin" />
-              <span>Processing...</span>
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4 text-black" />
-              Contribute ₹1,000
-              <TrendingUp className="w-3.5 h-3.5 text-zinc-500 ml-auto" />
-            </>
-          )}
-        </motion.button>
+          
+          <motion.button
+            whileHover={isComplete || isContributing ? {} : { scale: 1.015, y: -1 }}
+            whileTap={isComplete || isContributing ? {} : { scale: 0.97 }}
+            onClick={() => onContribute(id, 1000)}
+            disabled={isComplete || isContributing}
+            className={`
+              w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-[14px]
+              transition-all duration-200 relative overflow-hidden flex-1
+              ${isComplete
+                ? 'bg-zinc-900/50 text-emerald-500/70 border border-emerald-900/20'
+                : isContributing 
+                  ? 'bg-zinc-800 text-zinc-400 cursor-wait border border-white/5'
+                  : 'bg-white text-zinc-900 hover:bg-zinc-100 shadow-[0_4px_24px_rgba(255,255,255,0.08)] hover:shadow-[0_4px_32px_rgba(255,255,255,0.15)] cursor-pointer'
+              }
+            `}
+          >
+            {!(isComplete || isContributing) && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+            )}
+            {isComplete ? (
+              <>
+                <Sparkles className="w-4 h-4 text-emerald-500" />
+                <span className="text-emerald-500/80">Completed Goal</span>
+              </>
+            ) : isContributing ? (
+              <>
+                <Loader2 className="w-4 h-4 text-zinc-400 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 text-black" />
+                Contribute ₹1,000
+                <TrendingUp className="w-3.5 h-3.5 text-zinc-500 ml-auto" />
+              </>
+            )}
+          </motion.button>
+        </div>
       </div>
     </GlowCard>
   );

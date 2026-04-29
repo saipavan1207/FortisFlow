@@ -9,7 +9,9 @@ interface GoalCardsGridProps {
     goals: GoalUIModel[];
     onAddNew: () => void;
     onContribute: (id: string, amount: number) => void;
+    onArchive?: (id: string) => void;
     contributingIds: Set<string>;
+    showAddCard?: boolean;
 }
 
 const AddGoalCard = ({ onAddNew }: { onAddNew: () => void }) => {
@@ -38,7 +40,7 @@ const AddGoalCard = ({ onAddNew }: { onAddNew: () => void }) => {
     );
 };
 
-const GoalCardsGrid: React.FC<GoalCardsGridProps> = ({ goals, onAddNew, onContribute, contributingIds }) => {
+const GoalCardsGrid: React.FC<GoalCardsGridProps> = ({ goals, onAddNew, onContribute, onArchive, contributingIds, showAddCard = true }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {goals.map((goal, index) => (
@@ -52,18 +54,21 @@ const GoalCardsGrid: React.FC<GoalCardsGridProps> = ({ goals, onAddNew, onContri
                     <GoalCard 
                         goal={goal} 
                         onContribute={onContribute} 
+                        onArchive={onArchive}
                         isContributing={contributingIds.has(goal.id)}
                     />
                 </motion.div>
             ))}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: goals.length * 0.1 }}
-                className="h-full"
-            >
-                <AddGoalCard onAddNew={onAddNew} />
-            </motion.div>
+            {showAddCard && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: goals.length * 0.1 }}
+                    className="h-full"
+                >
+                    <AddGoalCard onAddNew={onAddNew} />
+                </motion.div>
+            )}
         </div>
     );
 };

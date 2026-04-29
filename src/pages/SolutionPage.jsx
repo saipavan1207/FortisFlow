@@ -228,7 +228,7 @@ const SolutionPage = () => {
                             Ready to take control?
                         </h2>
                         <p className="text-lg text-zinc-400 mb-10 max-w-xl mx-auto">
-                            Join thousands of users who have mastered their financial future with FortisFlow's intelligent tracking.
+                            Join thousands of users who have mastered their financial future with FortisFlow&apos;s intelligent tracking.
                         </p>
 
                         <button className="px-10 py-5 bg-white text-black rounded-full font-bold text-base tracking-wide shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] hover:scale-105 transition-all duration-300">

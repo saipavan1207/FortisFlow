@@ -127,11 +127,14 @@ export function useGoalsData() {
           
           const target = Number(g.target_amount) || 0;
           const newSaved = Math.min(Number(g.saved_amount) + amount, target);
-          const newStatus = newSaved >= target ? 'completed' : g.status;
+          const justCompleted = newSaved >= target && g.status !== 'completed';
+          const newStatus = justCompleted ? 'completed' : g.status;
+          const completedAt = justCompleted ? new Date().toISOString() : g.completed_at;
 
           const updatedGoal = { 
             ...g, 
             status: newStatus,
+            completed_at: completedAt,
             saved_amount: newSaved, 
             contributions: [...(g.contributions||[]), { amount, date: new Date().toISOString() }] 
           };
@@ -154,6 +157,15 @@ export function useGoalsData() {
       // Backend sync
       await goalsService.contribute(user.id, goalId, amount);
       
+      const targetGoal = state.goals.find(g => g.id === goalId);
+      const target = Number(targetGoal?.target_amount) || Number.MAX_VALUE;
+      const newSaved = Number(targetGoal?.saved_amount || 0) + amount;
+      
+      if (newSaved >= target && targetGoal?.status !== 'completed') {
+        // Goal achieved! Set completed_at in database
+        await goalsService.updateGoalStatus(user.id, goalId, 'completed', new Date().toISOString());
+      }
+
       // Delay fetch to let backend trigger finish
       setTimeout(() => fetchData(), 1500);
 
@@ -176,17 +188,47 @@ export function useGoalsData() {
     await fetchData();
   }, [fetchData]);
 
+  const archiveGoal = useCallback(async (goalId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // Optimistic update
+      setState(prev => {
+        const remaining = prev.goals.filter(g => g.id !== goalId);
+        return {
+          ...prev,
+          goals: remaining,
+          overviewStats: calc.computeOverviewStats(remaining),
+          projection: calc.generateProjection(remaining),
+        };
+      });
+      // Backend sync
+      await goalsService.archiveGoal(user.id, goalId);
+      // Background full fetch to ensure consistent state
+      fetchData();
+    } catch(e) {
+      console.error("Archive failed", e);
+      fetchData(); // rollback
+    }
+  }, [fetchData]);
+
+  const activeGoals = state.goals.filter(g => g.status === 'active');
+  const completedGoals = state.goals.filter(g => g.status === 'completed');
+
   return {
     isLoading: state.loading,
     isError: state.isError,
     errorObject: state.errorObject,
     goals: state.goals,
+    activeGoals,
+    completedGoals,
     overviewStats: state.overviewStats,
     projections: state.projection,
     aiGuidance: state.aiGuidance,
     contributingIds,
     contributeToGoal: contribute,
     addGoal: createGoal,
+    archiveGoal,
     refetch: fetchData,
   };
 }

@@ -1,4 +1,4 @@
-import { GoalRecord, GoalAnalytics, GoalsOverviewStats, ProjectionPoint, GoalUIModel } from '../types/goals';
+import { GoalRecord, GoalAnalytics, GoalsOverviewStats, ProjectionPoint, GoalUIModel, GoalHistory } from '../types/goals';
 
 /**
  * Compute avg daily saving from recent contribution history (last 30 days).
@@ -100,25 +100,75 @@ export function deriveGoalAnalytics(goal: GoalRecord): GoalAnalytics {
 }
 
 /**
+ * Returns historical tracking analytics for a completed goal.
+ */
+export function getGoalHistory(goal: GoalRecord | GoalUIModel): GoalHistory | null {
+  if (!goal.completed_at || goal.status !== 'completed') return null;
+
+  const createdTime = new Date(goal.created_at).getTime();
+  const completedTime = new Date(goal.completed_at).getTime();
+  const deadlineTime = new Date(goal.deadline).getTime();
+
+  const timeTakenDays = Math.max(1, Math.round((completedTime - createdTime) / (1000 * 60 * 60 * 24)));
+  const expectedDays = Math.max(1, Math.round((deadlineTime - createdTime) / (1000 * 60 * 60 * 24)));
+
+  let performance: GoalHistory['performance'] = 'On Time';
+  if (timeTakenDays < expectedDays * 0.8) {
+    performance = 'Ahead of Schedule';
+  } else if (timeTakenDays > expectedDays) {
+    performance = 'Delayed';
+  }
+
+  const completedDateStr = new Date(goal.completed_at).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+
+  return {
+    completedDate: completedDateStr,
+    timeTakenDays,
+    performance,
+  };
+}
+
+/**
  * Sort goals:
  * 1. Active before Completed
- * 2. Higher Priority first (assuming lower number = higher priority)
- * 3. Lowest Probability first (urgent goals surface to the top)
+ * 2. Active: Higher Priority first
+ * 3. Active: Lowest Probability first
+ * 4. Completed: Fastest timeTakenDays first
  */
 export function sortGoals(goals: GoalUIModel[]): GoalUIModel[] {
   return [...goals].sort((a, b) => {
     // Active vs Completed
     if (a.status !== b.status) {
-      return a.status === 'active' ? -1 : 1;
+      if (a.status === 'active') return -1;
+      if (b.status === 'active') return 1;
+      if (a.status === 'completed') return -1;
+      return 1;
     }
-    // Priority
-    const priorityA = Number(a.priority) || 0;
-    const priorityB = Number(b.priority) || 0;
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB;
+    
+    // Sort logic for active goals
+    if (a.status === 'active') {
+      const priorityA = Number(a.priority) || 0;
+      const priorityB = Number(b.priority) || 0;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      return (a.analytics?.probability || 0) - (b.analytics?.probability || 0);
     }
-    // Probability
-    return (a.analytics?.probability || 0) - (b.analytics?.probability || 0);
+
+    // Sort logic for completed goals: fastest completion first
+    if (a.status === 'completed') {
+      const historyA = getGoalHistory(a);
+      const historyB = getGoalHistory(b);
+      const timeA = historyA ? historyA.timeTakenDays : Infinity;
+      const timeB = historyB ? historyB.timeTakenDays : Infinity;
+      return timeA - timeB;
+    }
+
+    return 0;
   });
 }
 

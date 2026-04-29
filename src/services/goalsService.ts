@@ -57,23 +57,36 @@ export async function contribute(
   // Trigger automatically updates goals.saved_amount
 }
 
-export async function deleteGoal(goalId: string): Promise<void> {
+export async function deleteGoal(userId: string, goalId: string): Promise<void> {
   const { error } = await supabase
     .from('goals')
     .delete()
-    .eq('id', goalId);
+    .eq('id', goalId)
+    .eq('user_id', userId);
 
   if (error) throw error;
 }
 
 export async function updateGoalStatus(
+  userId: string,
   goalId: string,
-  status: 'active' | 'completed' | 'paused'
+  status: 'active' | 'completed' | 'paused' | 'archived',
+  completedAt?: string
 ): Promise<void> {
+  const updates: any = { status, updated_at: new Date().toISOString() };
+  if (completedAt !== undefined) {
+    updates.completed_at = completedAt;
+  }
+  
   const { error } = await supabase
     .from('goals')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', goalId);
+    .update(updates)
+    .eq('id', goalId)
+    .eq('user_id', userId);
 
   if (error) throw error;
+}
+
+export async function archiveGoal(userId: string, goalId: string): Promise<void> {
+  return updateGoalStatus(userId, goalId, 'archived');
 }

@@ -22,6 +22,16 @@ const TransactionsPage = () => {
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [clearing, setClearing] = useState(false);
 
+    const [prevFilters, setPrevFilters] = useState(filters);
+    const [prevSearch, setPrevSearch] = useState(debouncedSearch);
+
+    if (filters !== prevFilters || debouncedSearch !== prevSearch) {
+        setPrevFilters(filters);
+        setPrevSearch(debouncedSearch);
+        setLoading(true);
+        setCurrentPage(1);
+    }
+
     // Debounce search input
     const debounceRef = useRef(null);
     useEffect(() => {
@@ -34,7 +44,6 @@ const TransactionsPage = () => {
 
     // Fetch transactions whenever filters or debounced search change
     const fetchTransactions = useCallback(async () => {
-        setLoading(true);
         const queryFilters = {
             ...filters,
             search: debouncedSearch,
@@ -45,13 +54,11 @@ const TransactionsPage = () => {
     }, [filters, debouncedSearch]);
 
     useEffect(() => {
-        fetchTransactions();
+        const timer = setTimeout(() => {
+            fetchTransactions();
+        }, 0);
+        return () => clearTimeout(timer);
     }, [fetchTransactions]);
-
-    // Reset pagination when filters or search change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [filters, debouncedSearch]);
 
     // Delete single transaction
     const handleDeleteOne = async (id) => {

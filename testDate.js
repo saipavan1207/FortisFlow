@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 const DATE_PATTERNS = [
     /(\d{1,2}[\s/-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s/-]?\d{0,4})/i,
     /(\d{1,2}[\s/-]\d{1,2}[\s/-]\d{2,4})/,

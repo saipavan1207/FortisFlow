@@ -34,14 +34,8 @@ import { useDashboardData } from '../../hooks/useDashboardData'
 import { getSafePercentageChange } from '../../utils/formatters'
 import BudgetModal from '../BudgetModal'
 import { GoalGrid } from '../goals/GoalGrid'
-const spendingData = [
-    { month: 'Jan', amount: 4500, active: false },
-    { month: 'Feb', amount: 5200, active: false },
-    { month: 'Mar', amount: 4800, active: false },
-    { month: 'Apr', amount: 8240, active: true }, // Current/High
-    { month: 'May', amount: 6100, active: false },
-    { month: 'Jun', amount: 5900, active: false },
-]
+import { useGoalsData } from '../../hooks/useGoalsData'
+
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -76,40 +70,57 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const Dashboard = ({ isPreview = false }) => {
-    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
+const Dashboard = () => {
+    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions, profile, transactions } = useDashboardData();
+    const { activeGoals } = useGoalsData();
 
-    const [monthlyBudget, setMonthlyBudget] = useState(() => {
-        const saved = localStorage.getItem('monthlyBudget');
-        return saved ? parseFloat(saved) : 14500;
-    });
-    const currentSpending = 11300;
-    const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-    
+    const currentSpending = spendingStats?.monthlySpend || 0;
+    const hasData = transactions && transactions.length > 0;
+
+    const [monthlyBudget, setMonthlyBudget] = useState(0);
+    const [isBudgetLoaded, setIsBudgetLoaded] = useState(false);
+
     useEffect(() => {
-        localStorage.setItem('monthlyBudget', monthlyBudget.toString());
-    }, [monthlyBudget]);
+        if (profile?.id && !isBudgetLoaded) {
+            const saved = localStorage.getItem(`monthlyBudget_${profile.id}`);
+            if (saved) setMonthlyBudget(parseFloat(saved));
+            setIsBudgetLoaded(true);
+        }
+    }, [profile?.id, isBudgetLoaded]);
 
-    const safeToSpend = monthlyBudget - currentSpending;
-    const usedPercentage = (currentSpending / monthlyBudget) * 100;
+    useEffect(() => {
+        if (profile?.id && isBudgetLoaded && monthlyBudget > 0) {
+            localStorage.setItem(`monthlyBudget_${profile.id}`, monthlyBudget.toString());
+        }
+    }, [monthlyBudget, profile?.id, isBudgetLoaded]);
+
+    const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+
+    const safeToSpend = monthlyBudget > 0 ? monthlyBudget - currentSpending : 0;
+    const usedPercentage = monthlyBudget > 0 ? (currentSpending / monthlyBudget) * 100 : 0;
     const isWarning = usedPercentage > 90;
 
-    if (loading && !isPreview) {
+    if (loading) {
         return (
             <div className="flex w-full items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
             </div>
-        )
+        );
     }
 
-    const displayStats = isPreview ? { monthlySpend: 8240.50 } : { monthlySpend: spendingStats?.monthlySpend || 0 };
-
-    const score = Math.round(financialHealth?.score || 0);
+    const scoreValue = financialHealth?.score;
+    const isNoData = scoreValue === null;
+    const score = isNoData ? 'No data' : Math.round(scoreValue || 0);
+    
     let healthLabel = 'Bad';
     let healthColor = 'text-rose-400';
     let healthBg = 'bg-rose-500/10';
 
-    if (score >= 70) {
+    if (isNoData) {
+        healthLabel = 'N/A';
+        healthColor = 'text-zinc-400';
+        healthBg = 'bg-zinc-500/10';
+    } else if (score >= 70) {
         healthLabel = 'Good';
         healthColor = 'text-emerald-400';
         healthBg = 'bg-emerald-500/10';
@@ -119,34 +130,35 @@ const Dashboard = ({ isPreview = false }) => {
         healthBg = 'bg-blue-500/10';
     }
 
-    const chartData = (monthlyStatsData || []).map(m => ({
-        month: m.month,
-        income: parseFloat(m.income) || 0,
-        expense: parseFloat(m.expense) || 0
-    }));
+    const chartData = hasData
+        ? (monthlyStatsData || []).map(m => ({
+            month: m.month,
+            income: parseFloat(m.income) || 0,
+            expense: parseFloat(m.expense) || 0
+          }))
+        : [];
 
     const enhancedData = chartData.map((item, index, arr) => {
         if (index === 0) {
-            return { ...item, changeInfo: { value: 0, label: "New", trend: "neutral" } };
+            return { ...item, changeInfo: { value: 0, label: 'New', trend: 'neutral' } };
         }
         const prev = arr[index - 1].expense;
         const curr = item.expense;
-        return {
-            ...item,
-            changeInfo: getSafePercentageChange(curr, prev)
-        };
+        return { ...item, changeInfo: getSafePercentageChange(curr, prev) };
     });
 
-    const { uiLabel, trend } = expenseTrend || { uiLabel: "First active record", trend: "neutral" };
+    const { uiLabel, trend } = (hasData && expenseTrend) || { uiLabel: 'No data', trend: 'neutral' };
     const changeColor = trend === 'up' ? 'text-rose-400' : (trend === 'down' ? 'text-emerald-400' : 'text-zinc-400');
     const changeBg = trend === 'up' ? 'bg-rose-500/10' : (trend === 'down' ? 'bg-emerald-500/10' : 'bg-zinc-500/10');
 
-    const displayCategories = (categoryBreakdown || []).map((c, i) => ({
-        name: c.name,
-        amount: c.amount,
-        color: ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-emerald-500'][i % 5],
-        icon: UtensilsCrossed
-    }));
+    const displayCategories = hasData
+        ? (categoryBreakdown || []).map((c, i) => ({
+            name: c.name,
+            amount: c.amount,
+            color: ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-emerald-500'][i % 5],
+            icon: UtensilsCrossed,
+          }))
+        : [];
 
     const maxCategoryAmount = Math.max(...displayCategories.map(c => c.amount), 1);
 
@@ -165,7 +177,10 @@ const Dashboard = ({ isPreview = false }) => {
                         <div className="space-y-1">
                             <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Financial Health</p>
                             <div className="flex items-baseline gap-2 relative group/score">
-                                <h2 className="text-2xl font-bold text-white cursor-help border-b border-dashed border-zinc-500/50 pb-0.5">{score}<span className="text-base text-zinc-600 font-medium border-none pb-0">/100</span></h2>
+                                <h2 className="text-2xl font-bold text-white cursor-help border-b border-dashed border-zinc-500/50 pb-0.5">
+                                    {score}
+                                    {!isNoData && <span className="text-base text-zinc-600 font-medium border-none pb-0">/100</span>}
+                                </h2>
                                 {/* Popover Tooltip */}
                                 <div className="absolute left-0 top-full mt-2 w-max opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all duration-300 z-50">
                                     <div className="bg-[#1a1f2e] border border-white/10 rounded-lg p-3 shadow-xl backdrop-blur-xl">
@@ -182,7 +197,7 @@ const Dashboard = ({ isPreview = false }) => {
                     </div>
                     <div className="mt-4 flex items-center gap-2">
                         <div className={`px-2 py-1.5 rounded-md ${healthBg} ${healthColor} text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1`}>
-                            {score >= 70 ? <TrendingUp className="w-3 h-3" /> : (score >= 40 ? <Activity className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />)}
+                            {isNoData ? <Activity className="w-3 h-3" /> : (score >= 70 ? <TrendingUp className="w-3 h-3" /> : (score >= 40 ? <Activity className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />))}
                             {healthLabel}
                         </div>
                         <span className="text-zinc-600 text-xs font-medium">Based on income & goals</span>
@@ -200,7 +215,7 @@ const Dashboard = ({ isPreview = false }) => {
                         <div className="space-y-1">
                             <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Monthly Spend</p>
                             <div className="flex items-baseline gap-2">
-                                <h2 className="text-2xl font-bold text-white">₹{displayStats.monthlySpend.toLocaleString()}<span className="text-base text-zinc-600 font-medium"></span></h2>
+                                <h2 className="text-2xl font-bold text-white">₹{currentSpending.toLocaleString()}<span className="text-base text-zinc-600 font-medium"></span></h2>
                             </div>
                         </div>
                         <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/5 group-hover:bg-purple-500/10 group-hover:border-purple-500/20 transition-colors">
@@ -277,6 +292,13 @@ const Dashboard = ({ isPreview = false }) => {
 
                     {/* Recharts Container */}
                     <div className="flex-1 w-full mt-4 ml-[-20px] relative z-10 overflow-hidden h-[180px]">
+                        {!hasData ? (
+                            <div className="flex flex-col items-center justify-center h-full gap-2">
+                                <BarChart3 className="w-8 h-8 text-zinc-700" />
+                                <p className="text-zinc-500 text-sm font-medium">No transactions yet</p>
+                                <p className="text-zinc-600 text-xs">Add a transaction to see your activity chart</p>
+                            </div>
+                        ) : (
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={enhancedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -291,6 +313,7 @@ const Dashboard = ({ isPreview = false }) => {
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
+                        )}
                     </div>
                 </motion.div>
 
@@ -314,7 +337,7 @@ const Dashboard = ({ isPreview = false }) => {
 
                     {/* KPI Group - 24px bottom margin (Clear Section Break) */}
                     <div className="mb-6 flex flex-col gap-1">
-                        <h2 className="text-[26px] font-bold text-white leading-none">₹{displayStats.monthlySpend.toLocaleString()}</h2>
+                        <h2 className="text-[26px] font-bold text-white leading-none">₹{currentSpending.toLocaleString()}</h2>
                         <div className={`flex items-center gap-1.5 ${changeColor} text-xs font-bold tracking-wide`}>
                             {trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : (trend === 'down' ? <TrendingDown className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />)}
                             <span>{uiLabel}</span>
@@ -495,7 +518,7 @@ const Dashboard = ({ isPreview = false }) => {
                 transition={{ duration: 0.5, delay: 0.7 }}
                 className="w-full relative z-10"
             >
-                <GoalGrid />
+                <GoalGrid goals={activeGoals} />
             </motion.div>
 
             {/* Budget Modal */}

@@ -305,7 +305,7 @@ const Login = () => {
             // })
             // if (error) { alert(error.message) } else { window.location.href = '/dashboard' }
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabase.auth.signInWithPassword({
                 email: emailOrUsername, // Mapping state variable
                 password
             });

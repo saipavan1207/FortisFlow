@@ -5,18 +5,30 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const UserMenu = ({ isPreview = false }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(() => {
+        if (isPreview) {
+            return {
+                email: 'demo@fortisflow.com',
+                user_metadata: { full_name: 'Demo User' }
+            }
+        }
+        return null
+    })
+    const [prevIsPreview, setPrevIsPreview] = useState(isPreview)
     const menuRef = useRef(null)
 
-    useEffect(() => {
-        // If preview (landing page), use mock data
+    if (isPreview !== prevIsPreview) {
+        setPrevIsPreview(isPreview)
         if (isPreview) {
             setUser({
                 email: 'demo@fortisflow.com',
                 user_metadata: { full_name: 'Demo User' }
             })
-            return
         }
+    }
+
+    useEffect(() => {
+        if (isPreview) return;
 
         const getUser = async () => {
             if (!supabase) return
@@ -52,6 +64,9 @@ const UserMenu = ({ isPreview = false }) => {
 
     const handleLogout = async () => {
         if (isPreview) return // Don't actually logout in preview
+
+        // Clear local storage completely on logout to prevent data leaks across sessions
+        localStorage.clear()
 
         await supabase.auth.signOut()
         window.location.href = '/login'

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Twitter, Github, Linkedin } from 'lucide-react';
 
 

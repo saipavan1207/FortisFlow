@@ -149,13 +149,11 @@ const SummaryCard = ({ transactions }) => {
 const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
     const [step, setStep] = useState(1);
     const [smsText, setSmsText] = useState('');
-    const [bank, setBank] = useState('hdfc');
     const [parsedTransactions, setParsedTransactions] = useState([]);
     const [parsing, setParsing] = useState(false);
     const [importing, setImporting] = useState(false);
     const [parseComplete, setParseComplete] = useState(false);
     const [error, setError] = useState(null);
-    const [successMsg, setSuccessMsg] = useState(null);
     const [importSuccess, setImportSuccess] = useState(false);
 
     const resetModal = useCallback(() => {
@@ -166,7 +164,6 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
         setImporting(false);
         setParseComplete(false);
         setError(null);
-        setSuccessMsg(null);
         setImportSuccess(false);
     }, []);
 
@@ -207,9 +204,9 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
             } else {
                 setParsedTransactions(results);
                 setParseComplete(true);
-                setSuccessMsg(`${results.length} transaction${results.length !== 1 ? 's' : ''} detected`);
             }
         } catch (err) {
+            console.error(err);
             setError('Failed to parse SMS messages. Please try a different format.');
         } finally {
             setParsing(false);
@@ -250,7 +247,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                 source: txn.account_source || 'sms',
             }));
 
-            const { error: apiError, count } = await bulkAddTransactions(txnsToInsert);
+            const { error: apiError } = await bulkAddTransactions(txnsToInsert);
 
             if (apiError) throw apiError;
 
@@ -260,6 +257,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                 handleClose();
             }, 1800);
         } catch (err) {
+            console.error(err);
             setError(`Import failed: ${err.message || 'Unable to save transactions. Please try again.'}`);
         } finally {
             setImporting(false);
@@ -400,7 +398,7 @@ const ImportSmsModal = ({ isOpen, onClose, onSuccess }) => {
                                                 )}
                                             </button>
                                             <p className="text-[11px] text-zinc-600 mt-3">
-                                                We'll analyze your SMS messages and extract transaction data
+                                                We&apos;ll analyze your SMS messages and extract transaction data
                                             </p>
                                         </div>
                                     )}

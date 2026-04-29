@@ -14,6 +14,7 @@ const SECTION_VARIANTS = {
 
 const Goals: React.FC = () => {
     const [isPlannerOpen, setIsPlannerOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
 
     const {
         goals,
@@ -22,9 +23,13 @@ const Goals: React.FC = () => {
         aiGuidance,
         isLoading,
         isError,
+        errorObject,
         addGoal,
         contributeToGoal,
-        contributingIds
+        archiveGoal,
+        contributingIds,
+        activeGoals,
+        completedGoals
     } = useGoalsData();
 
     const handleAddGoal = async (goalData: any) => {
@@ -116,20 +121,56 @@ const Goals: React.FC = () => {
                 <GoalsOverview stats={overviewStats} />
             </motion.section>
 
-            {/* ── Goal Cards ── */}
+            {/* ── Goal Cards Tabs ── */}
             <motion.section variants={SECTION_VARIANTS}>
-                <div className="flex items-center justify-between mb-5">
-                    <div>
-                        <h2 className="text-lg font-bold text-white tracking-tight">Active Goals</h2>
-                        <p className="text-zinc-500 text-xs mt-0.5">{goals.filter(g => g.status === 'active').length} goal{goals.filter(g => g.status === 'active').length !== 1 ? 's' : ''} in progress</p>
+                <div className="flex flex-col md:flex-row items-baseline justify-between mb-5 gap-4">
+                    <div className="flex bg-white/[0.04] p-1 rounded-xl border border-white/10 w-fit">
+                        <button
+                            onClick={() => setActiveTab('active')}
+                            className={`relative px-5 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'active' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            {activeTab === 'active' && (
+                                <motion.div layoutId="goalTabIndicator" className="absolute inset-0 bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)] rounded-lg pointer-events-none border border-blue-500/30" />
+                            )}
+                            <span className="relative z-10 flex gap-2 items-center">
+                                Active Goals
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'active' ? 'bg-blue-500/20 text-blue-300' : 'bg-white/5 text-zinc-500'}`}>
+                                    {activeGoals.length}
+                                </span>
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('completed')}
+                            className={`relative px-5 py-2 text-sm font-bold rounded-lg transition-colors ${activeTab === 'completed' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            {activeTab === 'completed' && (
+                                <motion.div layoutId="goalTabIndicator" className="absolute inset-0 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)] rounded-lg pointer-events-none border border-emerald-500/30" />
+                            )}
+                            <span className="relative z-10 flex gap-2 items-center">
+                                Completed
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'completed' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/5 text-zinc-500'}`}>
+                                    {completedGoals.length}
+                                </span>
+                            </span>
+                        </button>
                     </div>
                 </div>
-                <GoalCardsGrid
-                    goals={goals}
-                    onAddNew={() => setIsPlannerOpen(true)}
-                    onContribute={handleContribute}
-                    contributingIds={contributingIds}
-                />
+
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, x: activeTab === 'active' ? -20 : 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                >
+                    <GoalCardsGrid
+                        goals={activeTab === 'active' ? activeGoals : completedGoals}
+                        onAddNew={() => setIsPlannerOpen(true)}
+                        onContribute={handleContribute}
+                        onArchive={archiveGoal}
+                        contributingIds={contributingIds}
+                        showAddCard={activeTab === 'active'}
+                    />
+                </motion.div>
             </motion.section>
 
             {/* ── AI Insights + Trajectory ── */}

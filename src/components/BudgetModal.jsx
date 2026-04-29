@@ -8,16 +8,25 @@ const BudgetModal = ({ isOpen, onClose, currentBudget, onSave }) => {
     const inputRef = useRef(null);
     const overlayRef = useRef(null);
 
-    // Sync input value when modal opens
-    useEffect(() => {
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+    const [prevBudget, setPrevBudget] = useState(currentBudget);
+
+    if (isOpen !== prevIsOpen || currentBudget !== prevBudget) {
+        setPrevIsOpen(isOpen);
+        setPrevBudget(currentBudget);
         if (isOpen) {
             setValue(currentBudget.toString());
             setError('');
-            // Focus the input after mount animation
+        }
+    }
+
+    // Focus the input after mount animation
+    useEffect(() => {
+        if (isOpen) {
             const timer = setTimeout(() => inputRef.current?.focus(), 150);
             return () => clearTimeout(timer);
         }
-    }, [isOpen, currentBudget]);
+    }, [isOpen]);
 
     // Lock body scroll when open
     useEffect(() => {

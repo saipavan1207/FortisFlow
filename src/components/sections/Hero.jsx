@@ -3,7 +3,6 @@ import Button from '../common/Button'
 import ScrollReveal from '../common/ScrollReveal'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import CapabilityStrip from './CapabilityStrip'
-import Dashboard from './Dashboard' // Remounting dashboard here for the "preview" look
 
 const Hero = () => {
     return (
@@ -46,14 +45,28 @@ const Hero = () => {
             {/* Capability Strip */}
             <CapabilityStrip />
 
-            {/* Dashboard Peek at Bottom */}
+            {/* Dashboard Preview Visual */}
             <div className="mt-10 w-full max-w-6xl mx-auto px-4 relative">
-                {/* Gradient Overlay - REMOVED for clarity */}
-                {/* <div className="absolute inset-x-0 -top-20 h-40 bg-gradient-to-b from-transparent to-[var(--color-bg-main)] z-20"></div> */}
-                <div className="rounded-xl border border-white/10 p-2 bg-zinc-900/50 backdrop-blur-sm shadow-2xl relative z-10 transform rotate-x-6 perspective-1000 origin-top">
-                    {/* Live Dashboard Component */}
-                    <div className="w-full bg-zinc-950 rounded-lg overflow-hidden relative shadow-2xl">
-                        <Dashboard isPreview={true} />
+                <div className="rounded-xl border border-white/10 p-2 bg-zinc-900/50 backdrop-blur-sm shadow-2xl relative z-10">
+                    <div className="w-full bg-zinc-950 rounded-lg overflow-hidden relative shadow-2xl p-6 min-h-[300px] flex flex-col gap-4">
+                        {/* Mock top KPI row */}
+                        <div className="grid grid-cols-3 gap-4">
+                            {[
+                                { label: 'Financial Health', value: '—', sub: 'Add transactions to score' },
+                                { label: 'Monthly Spend', value: '₹0', sub: 'No data yet' },
+                                { label: 'AI Insight', value: 'Waiting for data...', sub: '', gradient: true }
+                            ].map((card, i) => (
+                                <div key={i} className={`rounded-2xl border p-4 h-28 flex flex-col justify-between ${card.gradient ? 'bg-gradient-to-br from-blue-600 to-purple-700 border-transparent' : 'bg-zinc-900/50 border-white/5'}`}>
+                                    <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">{card.label}</p>
+                                    <p className={`text-xl font-bold ${card.gradient ? 'text-white' : 'text-white'}`}>{card.value}</p>
+                                    {card.sub && <p className="text-zinc-500 text-[10px]">{card.sub}</p>}
+                                </div>
+                            ))}
+                        </div>
+                        {/* Mock chart area */}
+                        <div className="rounded-2xl border border-white/5 bg-zinc-900/30 p-5 h-40 flex items-center justify-center">
+                            <p className="text-zinc-600 text-sm">Your income &amp; expense chart appears here after first transaction</p>
+                        </div>
                     </div>
                 </div>
             </div>

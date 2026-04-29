@@ -4,11 +4,16 @@ import { X, Loader2, CheckCircle2 } from 'lucide-react';
 import { addTransaction } from '../services/transactions';
 
 const categories = [
-    { id: 'Food & Dining', label: 'Food & Dining' },
+    { id: 'Food', label: 'Food & Dining' },
     { id: 'Transport', label: 'Transport' },
     { id: 'Shopping', label: 'Shopping' },
-    { id: 'Bills', label: 'Bills' },
+    { id: 'Bills', label: 'Bills & Utilities' },
     { id: 'Housing', label: 'Housing' },
+    { id: 'Health', label: 'Health' },
+    { id: 'Entertainment', label: 'Entertainment' },
+    { id: 'Subscriptions', label: 'Subscriptions' },
+    { id: 'Travel', label: 'Travel' },
+    { id: 'Income', label: 'Income' },
     { id: 'Other', label: 'Other' }
 ];
 
@@ -19,14 +24,32 @@ const AddTransactionModal = ({ isOpen, onClose, onSuccess }) => {
 
     const [formData, setFormData] = useState({
         amount: '',
-        category: 'Food & Dining',
-        merchant: '',
+        category: 'Food',
+        subcategory: '',
         description: '',
-        date: new Date().toISOString().split('T')[0]
+        created_at: new Date().toISOString().split('T')[0]
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        
+        let newFormData = { ...formData, [name]: value };
+
+        // Auto-categorization logic — scan description and subcategory
+        if (name === 'subcategory' || name === 'description') {
+            const textToScan = value.toLowerCase();
+            if (textToScan.includes('swiggy') || textToScan.includes('zomato') || textToScan.includes('blinkit')) {
+                newFormData.category = 'Food';
+                if (type === 'income') setType('expense');
+            } else if (textToScan.includes('netflix') || textToScan.includes('prime') || textToScan.includes('hotstar')) {
+                newFormData.category = 'Entertainment';
+                if (type === 'income') setType('expense');
+            } else if (textToScan.includes('uber') || textToScan.includes('ola') || textToScan.includes('rapido')) {
+                newFormData.category = 'Transport';
+            }
+        }
+
+        setFormData(newFormData);
     };
 
     const handleSubmit = async (e) => {
@@ -43,13 +66,13 @@ const AddTransactionModal = ({ isOpen, onClose, onSuccess }) => {
 
             if (apiError) throw apiError;
 
-            // Success
+            // Success — reset form
             setFormData({
                 amount: '',
-                category: 'Food & Dining',
-                merchant: '',
+                category: 'Food',
+                subcategory: '',
                 description: '',
-                date: new Date().toISOString().split('T')[0]
+                created_at: new Date().toISOString().split('T')[0]
             });
             onSuccess?.();
             onClose();
@@ -124,27 +147,26 @@ const AddTransactionModal = ({ isOpen, onClose, onSuccess }) => {
                             </div>
                         </div>
 
-                        {/* Merchant + Date Row */}
+                        {/* Subcategory + Date Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Merchant / Title</label>
+                                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Subcategory / Merchant</label>
                                 <input
                                     type="text"
-                                    name="merchant"
-                                    required
-                                    value={formData.merchant}
+                                    name="subcategory"
+                                    value={formData.subcategory}
                                     onChange={handleChange}
                                     className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all placeholder:text-zinc-600"
-                                    placeholder="Uber, Amazon..."
+                                    placeholder="Swiggy, Amazon..."
                                 />
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-zinc-400 mb-1.5">Date</label>
                                 <input
                                     type="date"
-                                    name="date"
+                                    name="created_at"
                                     required
-                                    value={formData.date}
+                                    value={formData.created_at}
                                     onChange={handleChange}
                                     className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all"
                                 />

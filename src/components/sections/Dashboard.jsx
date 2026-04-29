@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import {
@@ -32,22 +33,25 @@ import {
 } from 'lucide-react'
 import { useDashboardData } from '../../hooks/useDashboardData'
 import { getSafePercentageChange } from '../../utils/formatters'
+import BudgetModal from '../BudgetModal'
+import { GoalGrid } from '../goals/GoalGrid'
+import { useGoalsData } from '../../hooks/useGoalsData'
 
-const spendingData = [
-    { month: 'Jan', amount: 4500, active: false },
-    { month: 'Feb', amount: 5200, active: false },
-    { month: 'Mar', amount: 4800, active: false },
-    { month: 'Apr', amount: 8240, active: true }, // Current/High
-    { month: 'May', amount: 6100, active: false },
-    { month: 'Jun', amount: 5900, active: false },
-]
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
+        
+        const formatLabel = (lbl) => {
+            if (!lbl || !lbl.includes('-')) return lbl;
+            const [year, month] = lbl.split('-');
+            const date = new Date(year, month - 1);
+            return date.toLocaleDateString('default', { month: 'short', year: 'numeric' });
+        };
+        
         return (
             <div className="bg-[#12141c]/90 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-md">
-                <p className="text-white font-bold mb-3">{label} Insights</p>
+                <p className="text-white font-bold mb-3">{formatLabel(label)} Insights</p>
                 {payload.map((entry, index) => (
                     <div key={index} className="flex items-center justify-between gap-4 mb-2 shadow-sm rounded-md mix-blend-screen bg-black/20 p-2 border border-white/5">
                         <div className="flex items-center gap-2">
@@ -75,25 +79,112 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const Dashboard = ({ isPreview = false }) => {
-    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions } = useDashboardData(isPreview);
+const getCategoryEmoji = (category) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('food') || cat.includes('dining') || cat.includes('restaurant') || cat.includes('swiggy') || cat.includes('zomato')) return '🍔';
+    if (cat.includes('transport') || cat.includes('travel') || cat.includes('fuel') || cat.includes('uber') || cat.includes('ola')) return '🚗';
+    if (cat.includes('shopping') || cat.includes('retail') || cat.includes('amazon') || cat.includes('flipkart')) return '🛍️';
+    if (cat.includes('bills') || cat.includes('utilities') || cat.includes('subscription')) return '🧾';
+    if (cat.includes('health') || cat.includes('medical') || cat.includes('pharmacy')) return '💊';
+    if (cat.includes('entertainment') || cat.includes('movies') || cat.includes('netflix')) return '🎬';
+    if (cat.includes('salary') || cat.includes('income')) return '💰';
+    if (cat.includes('investment')) return '📈';
+    if (cat.includes('grocery') || cat.includes('groceries')) return '🛒';
+    return '💳'; // Default
+};
 
-    if (loading && !isPreview) {
+const Dashboard = () => {
+    const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions, profile, transactions } = useDashboardData();
+    const { activeGoals } = useGoalsData();
+
+    const currentSpending = spendingStats?.monthlySpend || 0;
+    const hasData = transactions && transactions.length > 0;
+
+    const [monthlyBudget, setMonthlyBudget] = useState(0);
+    const [isBudgetLoaded, setIsBudgetLoaded] = useState(false);
+
+    useEffect(() => {
+        if (profile?.id && !isBudgetLoaded) {
+            const saved = localStorage.getItem(`monthlyBudget_${profile.id}`);
+            if (profile.monthly_budget) {
+                setMonthlyBudget(profile.monthly_budget);
+            } else if (saved) {
+                setMonthlyBudget(parseFloat(saved));
+            }
+            setIsBudgetLoaded(true);
+        }
+    }, [profile?.id, profile?.monthly_budget, isBudgetLoaded]);
+
+    const handleSaveBudget = async (newBudget) => {
+        setMonthlyBudget(newBudget);
+        if (profile?.id) {
+            localStorage.setItem(`monthlyBudget_${profile.id}`, newBudget.toString());
+            try {
+                // Update profile fallback
+                await supabase.from('profiles').update({ monthly_budget: newBudget }).eq('id', profile.id);
+                
+                // Update specific monthly budget
+                const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+                const currentMonth = new Date().getMonth() + 1;
+                const currentYear = new Date().getFullYear();
+
+                const { data: existingBudgets } = await supabase
+                    .from('budgets')
+                    .select('id')
+                    .eq('user_id', profile.id)
+                    .eq('category', currentMonthName)
+                    .eq('month', currentMonth)
+                    .eq('year', currentYear);
+
+                if (existingBudgets && existingBudgets.length > 0) {
+                    await supabase
+                        .from('budgets')
+                        .update({ Budget: newBudget })
+                        .eq('id', existingBudgets[0].id);
+                } else {
+                    await supabase
+                        .from('budgets')
+                        .insert({
+                            user_id: profile.id,
+                            category: currentMonthName,
+                            Budget: newBudget,
+                            month: currentMonth,
+                            year: currentYear
+                        });
+                }
+            } catch (err) {
+                console.error('Failed to save budget to DB', err);
+            }
+        }
+    };
+
+    const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+
+    const safeToSpend = monthlyBudget > 0 ? Math.max(0, monthlyBudget - currentSpending) : 0;
+    const usedPercentage = monthlyBudget > 0 ? Math.min((currentSpending / monthlyBudget) * 100, 100) : 0;
+    const isWarning = usedPercentage > 90;
+
+    if (loading) {
         return (
             <div className="flex w-full items-center justify-center py-20">
                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
             </div>
-        )
+        );
     }
 
-    const displayStats = isPreview ? { monthlySpend: 8240.50 } : { monthlySpend: spendingStats?.monthlySpend || 0 };
-
-    const score = Math.round(financialHealth || 0);
+    const scoreValue = financialHealth?.score;
+    const isNoData = scoreValue === null;
+    const score = isNoData ? 'No data' : Math.round(scoreValue || 0);
+    
     let healthLabel = 'Bad';
     let healthColor = 'text-rose-400';
     let healthBg = 'bg-rose-500/10';
 
-    if (score >= 70) {
+    if (isNoData) {
+        healthLabel = 'N/A';
+        healthColor = 'text-zinc-400';
+        healthBg = 'bg-zinc-500/10';
+    } else if (score >= 70) {
         healthLabel = 'Good';
         healthColor = 'text-emerald-400';
         healthBg = 'bg-emerald-500/10';
@@ -103,34 +194,35 @@ const Dashboard = ({ isPreview = false }) => {
         healthBg = 'bg-blue-500/10';
     }
 
-    const chartData = (monthlyStatsData || []).map(m => ({
-        month: m.month,
-        income: parseFloat(m.income) || 0,
-        expense: parseFloat(m.expense) || 0
-    }));
+    const chartData = hasData
+        ? (monthlyStatsData || []).map(m => ({
+            month: m.month,
+            income: parseFloat(m.income) || 0,
+            expense: parseFloat(m.expense) || 0
+          }))
+        : [];
 
     const enhancedData = chartData.map((item, index, arr) => {
         if (index === 0) {
-            return { ...item, changeInfo: { value: 0, label: "New", trend: "neutral" } };
+            return { ...item, changeInfo: { value: 0, label: 'New', trend: 'neutral' } };
         }
         const prev = arr[index - 1].expense;
         const curr = item.expense;
-        return {
-            ...item,
-            changeInfo: getSafePercentageChange(curr, prev)
-        };
+        return { ...item, changeInfo: getSafePercentageChange(curr, prev) };
     });
 
-    const { uiLabel, trend } = expenseTrend || { uiLabel: "First active record", trend: "neutral" };
+    const { uiLabel, trend } = (hasData && expenseTrend) || { uiLabel: 'No data', trend: 'neutral' };
     const changeColor = trend === 'up' ? 'text-rose-400' : (trend === 'down' ? 'text-emerald-400' : 'text-zinc-400');
     const changeBg = trend === 'up' ? 'bg-rose-500/10' : (trend === 'down' ? 'bg-emerald-500/10' : 'bg-zinc-500/10');
 
-    const displayCategories = (categoryBreakdown || []).map((c, i) => ({
-        name: c.name,
-        amount: c.amount,
-        color: ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-emerald-500'][i % 5],
-        icon: UtensilsCrossed
-    }));
+    const displayCategories = hasData
+        ? (categoryBreakdown || []).map((c, i) => ({
+            name: c.name,
+            amount: c.amount,
+            color: ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-emerald-500'][i % 5],
+            emoji: getCategoryEmoji(c.name),
+          }))
+        : [];
 
     const maxCategoryAmount = Math.max(...displayCategories.map(c => c.amount), 1);
 
@@ -148,8 +240,19 @@ const Dashboard = ({ isPreview = false }) => {
                     <div className="flex items-start justify-between">
                         <div className="space-y-1">
                             <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Financial Health</p>
-                            <div className="flex items-baseline gap-2">
-                                <h2 className="text-2xl font-bold text-white">{score}<span className="text-base text-zinc-600 font-medium">/100</span></h2>
+                            <div className="flex items-baseline gap-2 relative group/score">
+                                <h2 className="text-2xl font-bold text-white cursor-help border-b border-dashed border-zinc-500/50 pb-0.5">
+                                    {score}
+                                    {!isNoData && <span className="text-base text-zinc-600 font-medium border-none pb-0">/100</span>}
+                                </h2>
+                                {/* Popover Tooltip */}
+                                <div className="absolute left-0 top-full mt-2 w-max opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all duration-300 z-50">
+                                    <div className="bg-[#1a1f2e] border border-white/10 rounded-lg p-3 shadow-xl backdrop-blur-xl">
+                                        <p className="text-sm text-zinc-300 font-medium whitespace-nowrap">
+                                            Savings rate: <span className="text-white font-bold">{financialHealth?.savings_rate_score || 0}/40</span> | Goals: <span className="text-white font-bold">{financialHealth?.goals_progress_score || 0}/30</span> | Budget: <span className="text-white font-bold">{financialHealth?.budget_adherence_score || 0}/30</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/5 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-colors">
@@ -158,7 +261,7 @@ const Dashboard = ({ isPreview = false }) => {
                     </div>
                     <div className="mt-4 flex items-center gap-2">
                         <div className={`px-2 py-1.5 rounded-md ${healthBg} ${healthColor} text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1`}>
-                            {score >= 70 ? <TrendingUp className="w-3 h-3" /> : (score >= 40 ? <Activity className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />)}
+                            {isNoData ? <Activity className="w-3 h-3" /> : (score >= 70 ? <TrendingUp className="w-3 h-3" /> : (score >= 40 ? <Activity className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />))}
                             {healthLabel}
                         </div>
                         <span className="text-zinc-600 text-xs font-medium">Based on income & goals</span>
@@ -176,7 +279,7 @@ const Dashboard = ({ isPreview = false }) => {
                         <div className="space-y-1">
                             <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Monthly Spend</p>
                             <div className="flex items-baseline gap-2">
-                                <h2 className="text-2xl font-bold text-white">₹{displayStats.monthlySpend.toLocaleString()}<span className="text-base text-zinc-600 font-medium"></span></h2>
+                                <h2 className="text-2xl font-bold text-white">₹{currentSpending.toLocaleString()}<span className="text-base text-zinc-600 font-medium"></span></h2>
                             </div>
                         </div>
                         <div className="p-3 rounded-xl bg-zinc-900/50 border border-white/5 group-hover:bg-purple-500/10 group-hover:border-purple-500/20 transition-colors">
@@ -253,10 +356,22 @@ const Dashboard = ({ isPreview = false }) => {
 
                     {/* Recharts Container */}
                     <div className="flex-1 w-full mt-4 ml-[-20px] relative z-10 overflow-hidden h-[180px]">
+                        {!hasData ? (
+                            <div className="flex flex-col items-center justify-center h-full gap-2">
+                                <BarChart3 className="w-8 h-8 text-zinc-700" />
+                                <p className="text-zinc-500 text-sm font-medium">No transactions yet</p>
+                                <p className="text-zinc-600 text-xs">Add a transaction to see your activity chart</p>
+                            </div>
+                        ) : (
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={enhancedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+                                <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => {
+                                    if (!value || !value.includes('-')) return value;
+                                    const [year, month] = value.split('-');
+                                    const date = new Date(year, month - 1);
+                                    return date.toLocaleDateString('default', { month: 'short', year: '2-digit' });
+                                }} />
                                 <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
                                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} content={<CustomTooltip />} />
                                 <Bar dataKey="income" name="Income" fill="#34d399" radius={[4, 4, 0, 0]} barSize={20} />
@@ -267,6 +382,7 @@ const Dashboard = ({ isPreview = false }) => {
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
+                        )}
                     </div>
                 </motion.div>
 
@@ -281,7 +397,7 @@ const Dashboard = ({ isPreview = false }) => {
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex flex-col gap-0.5">
                             <h3 className="text-lg font-bold text-white leading-tight">Top Sources</h3>
-                            <p className="text-sm text-zinc-500 font-medium">Last 30 Days</p>
+                            <p className="text-sm text-zinc-500 font-medium">This Month</p>
                         </div>
                         <button className="text-zinc-500 hover:text-white transition-colors p-1 rounded-md hover:bg-white/5">
                             <ChevronDown className="w-4 h-4" />
@@ -290,7 +406,7 @@ const Dashboard = ({ isPreview = false }) => {
 
                     {/* KPI Group - 24px bottom margin (Clear Section Break) */}
                     <div className="mb-6 flex flex-col gap-1">
-                        <h2 className="text-[26px] font-bold text-white leading-none">₹{displayStats.monthlySpend.toLocaleString()}</h2>
+                        <h2 className="text-[26px] font-bold text-white leading-none">₹{currentSpending.toLocaleString()}</h2>
                         <div className={`flex items-center gap-1.5 ${changeColor} text-xs font-bold tracking-wide`}>
                             {trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : (trend === 'down' ? <TrendingDown className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />)}
                             <span>{uiLabel}</span>
@@ -305,7 +421,7 @@ const Dashboard = ({ isPreview = false }) => {
                                 <div className="flex items-center justify-between mb-1">
                                     <div className="flex items-center gap-2.5">
                                         <div className={`w-6 h-6 rounded-md ${cat.color} bg-opacity-20 flex items-center justify-center`}>
-                                            <cat.icon className="w-3.5 h-3.5 text-white" />
+                                            <span className="text-[14px] leading-none">{cat.emoji}</span>
                                         </div>
                                         <span className="text-[12px] font-semibold text-zinc-300">{cat.name}</span>
                                     </div>
@@ -328,75 +444,7 @@ const Dashboard = ({ isPreview = false }) => {
                 </motion.div>
             </div>
 
-            {/* Insights Row: Budget Tracker & Goal Predictions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Budget Tracking */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.5 }}
-                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
-                >
-                    <div className="flex items-center gap-2 mb-4">
-                        <Wallet className="w-5 h-5 text-blue-400" />
-                        <h3 className="text-lg font-bold text-white leading-tight">Budget vs Actual</h3>
-                    </div>
-                    {budgetsVsActual.length > 0 ? budgetsVsActual.map((b, i) => (
-                        <div key={i} className="mb-4 last:mb-0">
-                            <div className="flex justify-between items-center text-sm mb-1.5">
-                                <span className="text-zinc-300 font-medium flex items-center gap-2">
-                                    {b.category}
-                                    {b.usage_percentage > 100 && (
-                                        <span className="text-[10px] font-extrabold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
-                                            Over Budget
-                                        </span>
-                                    )}
-                                </span>
-                                <span className="text-zinc-400">₹{b.actual_spend} / ₹{b.monthly_limit}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(b.usage_percentage, 100)}%` }}
-                                    className={`h-full rounded-full ${b.usage_percentage > 90 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-blue-500'}`}
-                                />
-                            </div>
-                        </div>
-                    )) : (
-                        <p className="text-sm text-zinc-500">No active budgets this month. Setting limits helps control capital.</p>
-                    )}
-                </motion.div>
 
-                {/* Goal Predictions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.6 }}
-                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
-                >
-                    <div className="flex items-center gap-2 mb-4">
-                        <Target className="w-5 h-5 text-emerald-400" />
-                        <h3 className="text-lg font-bold text-white leading-tight">Goal Forecasts</h3>
-                    </div>
-                    {goalPredictions.length > 0 ? goalPredictions.map((goal, i) => (
-                        <div key={i} className="mb-4 last:mb-0 p-3 bg-zinc-950/50 border border-white/5 rounded-xl">
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-zinc-300 font-bold">{goal.title}</span>
-                                <span className="text-xs font-medium text-zinc-500 shadow-sm">Target: ₹{goal.target_amount}</span>
-                            </div>
-                            <p className="text-xs text-zinc-400 mb-2">Saved: ₹{goal.saved_amount} | Avg Monthly Rate: ₹{Math.round(goal.avg_monthly_saving)}</p>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                                <span className="text-emerald-400 font-bold text-sm tracking-wide">
-                                    {goal.months_left <= 0 ? "Goal Reached! 🎉" : `${Math.ceil(goal.months_left)} months to completion`}
-                                </span>
-                            </div>
-                        </div>
-                    )) : (
-                        <p className="text-sm text-zinc-500">No active goals. Define what you are saving for.</p>
-                    )}
-                </motion.div>
-            </div>
 
             {/* Bottom Action Strip - Polished */}
             <motion.div
@@ -424,11 +472,11 @@ const Dashboard = ({ isPreview = false }) => {
                                 Spending Control
                             </h4>
                             <p className="text-xs sm:text-sm text-zinc-400 font-medium mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span>Safe to spend: <span className="text-white font-bold">₹3,200</span></span>
+                                <span>Safe to spend: <span className="text-white font-bold">₹{safeToSpend.toLocaleString()}</span></span>
                                 <span className="hidden sm:inline text-zinc-600">•</span>
-                                <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                    On track
+                                <span className={`${isWarning ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'} font-semibold px-2 py-0.5 rounded-full border flex items-center gap-1`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isWarning ? 'bg-rose-400' : 'bg-emerald-400'} animate-pulse`} />
+                                    {isWarning ? 'Warning' : 'On track'}
                                 </span>
                             </p>
                         </div>
@@ -441,18 +489,21 @@ const Dashboard = ({ isPreview = false }) => {
                                 <div className="w-32 h-1.5 bg-black/50 rounded-full overflow-hidden ring-1 ring-white/10 shadow-inner relative">
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: "78%" }}
+                                        animate={{ width: `${Math.min(usedPercentage, 100)}%` }}
                                         transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                                        className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.6)]"
+                                        className={`absolute top-0 bottom-0 left-0 ${isWarning ? 'bg-gradient-to-r from-rose-600 to-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.6)]' : 'bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]'} rounded-full`}
                                     >
                                         <div className="absolute right-0 top-0 bottom-0 w-3 bg-white/40 blur-[2px] rounded-full" />
                                     </motion.div>
                                 </div>
-                                <span className="text-xs text-white font-bold drop-shadow-md">78%</span>
+                                <span className="text-xs text-white font-bold drop-shadow-md">{Math.min(Math.round(usedPercentage), 100)}%</span>
                             </div>
                         </div>
 
-                        <button className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden">
+                        <button 
+                            onClick={() => setIsBudgetModalOpen(true)}
+                            className="shrink-0 px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_4px_14px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)] flex items-center gap-2 group/btn relative overflow-hidden"
+                        >
                             <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
                             <span className="relative z-10">Adjust Budget</span>
                             <Settings className="w-4 h-4 text-zinc-700 group-hover/btn:rotate-90 transition-transform duration-500 relative z-10" />
@@ -460,6 +511,24 @@ const Dashboard = ({ isPreview = false }) => {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Goal Cards Module */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+                className="w-full relative z-10"
+            >
+                <GoalGrid goals={activeGoals} />
+            </motion.div>
+
+            {/* Budget Modal */}
+            <BudgetModal
+                isOpen={isBudgetModalOpen}
+                onClose={() => setIsBudgetModalOpen(false)}
+                currentBudget={monthlyBudget}
+                onSave={handleSaveBudget}
+            />
         </div>
     )
 }

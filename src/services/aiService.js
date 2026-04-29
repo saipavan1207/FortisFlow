@@ -70,6 +70,49 @@ Do not use bolding or markdown. No introduction.
             topCat = dashboardData.categoryBreakdown[0].name;
         }
         
-        return `• Spending ₹${spendFormatted}\n• ${topCat} is highest. Review next month.`;
+        return `• Spending ₹${spendFormatted} this period\n• Highest spending was on ${topCat}. Consider optimizing.`;
+    }
+};
+
+export const generateAnalyticsInsight = async (analyticsData) => {
+    try {
+        if (!analyticsData || !analyticsData.kpis) {
+            return "Gathering more data to provide insights...";
+        }
+
+        const { kpis, category_breakdown } = analyticsData;
+        const netSavings = kpis.net_savings;
+        const topCat = kpis.top_category;
+        
+        let topCatAmount = 0;
+        if (category_breakdown && category_breakdown.length > 0) {
+            const topCatData = category_breakdown.find(c => c.category === topCat);
+            if (topCatData) topCatAmount = topCatData.amount;
+        }
+
+        const defaultInsight = `Your net savings are ₹${netSavings.toLocaleString('en-IN')}. Highest spending is on ${topCat} (₹${topCatAmount.toLocaleString('en-IN')}).`;
+
+        if (!genAI) return defaultInsight;
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const prompt = `
+You are a concise financial advisor.
+Data:
+Net Savings: ₹${netSavings}
+Top Spending Category: ${topCat} (₹${topCatAmount})
+Total Income: ₹${kpis.total_income}
+Total Expense: ₹${kpis.total_expense}
+
+Write exactly ONE short, encouraging, and highly specific sentence summarizing this and giving a quick tip. No markdown, no bullet points.
+        `.trim();
+
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text().trim();
+        
+        return responseText || defaultInsight;
+
+    } catch (error) {
+        console.error("AI Analytics Insight generation failed:", error);
+        return "Keep tracking your expenses to build strong financial habits.";
     }
 };

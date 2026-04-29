@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+
 import { CreditCard, Smartphone, Zap } from 'lucide-react';
 import GlassCard from '../../common/GlassCard';
 

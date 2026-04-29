@@ -1,22 +1,5 @@
 import { supabase } from '../lib/supabase';
 
-/**
- * Map app-level type values to DB enum values
- * App uses: 'income' / 'expense'
- * DB uses:  'credit' / 'debit'
- */
-const mapTypeToDB = (type) => type;
-
-const mapTypeFromDB = (type) => type;
-
-const mapSourceToDB = (source) => {
-    const validSources = ['upi', 'bank', 'card', 'sms', 'HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'Other'];
-    if (validSources.includes(source)) return source;
-    // Attempt uppercase transformation matching for known values before defaulting to upi
-    if (source?.toUpperCase() === 'UPI') return 'upi';
-    return 'upi'; // default fallback
-};
-
 // Add a new transaction
 export const addTransaction = async (transactionData) => {
     try {
@@ -26,16 +9,16 @@ export const addTransaction = async (transactionData) => {
         const record = {
             user_id: user.id,
             amount: parseFloat(transactionData.amount),
-            type: mapTypeToDB(transactionData.type),
-            merchant: transactionData.merchant,
+            type: transactionData.type,          // 'income' | 'expense'
             category: transactionData.category,
-            account_source: mapSourceToDB(transactionData.source || 'upi'),
-            date: transactionData.date
-                ? new Date(transactionData.date).toISOString()
-                : new Date().toISOString(),
-            status: transactionData.status || 'completed',
+            subcategory: transactionData.subcategory || transactionData.merchant || null,
+            merchant: transactionData.merchant || null,
+            account_source: transactionData.account_source || transactionData.source || null,
             description: transactionData.description || null,
+            created_at: transactionData.created_at ? new Date(transactionData.created_at).toISOString() : (transactionData.date ? new Date(transactionData.date).toISOString() : new Date().toISOString()),
         };
+
+        console.log('[addTransaction] Inserting record:', record);
 
         const { data, error } = await supabase
             .from('transactions')
@@ -45,8 +28,7 @@ export const addTransaction = async (transactionData) => {
 
         if (error) throw error;
 
-        // Map type back for the UI
-        if (data) data.type = mapTypeFromDB(data.type);
+        console.log('[addTransaction] Inserted:', data);
         return { data, error: null };
     } catch (error) {
         console.error('Error adding transaction:', error);
@@ -63,15 +45,13 @@ export const bulkAddTransactions = async (transactions) => {
         const records = transactions.map(txn => ({
             user_id: user.id,
             amount: parseFloat(txn.amount),
-            type: mapTypeToDB(txn.type),
-            merchant: txn.merchant,
+            type: txn.type,
             category: txn.category,
-            account_source: mapSourceToDB(txn.source || 'sms'),
-            date: txn.date
-                ? new Date(txn.date).toISOString()
-                : new Date().toISOString(),
-            status: 'completed',
+            subcategory: txn.subcategory || txn.merchant || null,
+            merchant: txn.merchant || null,
+            account_source: txn.account_source || txn.source || null,
             description: txn.description || null,
+            created_at: txn.created_at ? new Date(txn.created_at).toISOString() : (txn.date ? new Date(txn.date).toISOString() : new Date().toISOString()),
         }));
 
         const { data, error } = await supabase
@@ -81,9 +61,7 @@ export const bulkAddTransactions = async (transactions) => {
 
         if (error) throw error;
 
-        // Map types back for the UI
-        const mapped = (data || []).map(d => ({ ...d, type: mapTypeFromDB(d.type) }));
-        return { data: mapped, error: null, count: mapped.length };
+        return { data: data || [], error: null, count: data?.length || 0 };
     } catch (error) {
         console.error('Error bulk adding transactions:', error);
         return { data: null, error, count: 0 };
@@ -100,16 +78,11 @@ export const getTransactions = async (filters = {}) => {
             .from('transactions')
             .select('*')
             .eq('user_id', user.id)
-            .order('date', { ascending: false });
+            .order('created_at', { ascending: false });
 
         // ── Type filter ──
         if (filters.type && filters.type !== 'all') {
-            query = query.eq('type', mapTypeToDB(filters.type));
-        }
-
-        // ── Account source filter ──
-        if (filters.account && filters.account !== 'all') {
-            query = query.eq('account_source', filters.account);
+            query = query.eq('type', filters.type);
         }
 
         // ── Category filter ──
@@ -125,20 +98,21 @@ export const getTransactions = async (filters = {}) => {
             if (filters.date === 'today') {
                 startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             } else if (filters.date === 'week') {
-                const dayOfWeek = now.getDay();
-                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
             } else if (filters.date === 'month') {
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
             }
 
             if (startDate) {
-                query = query.gte('date', startDate.toISOString());
+                query = query.gte('created_at', startDate.toISOString());
             }
         }
 
-        // ── Search (merchant ilike) ──
+        // ── Search (description / category ilike) ──
         if (filters.search && filters.search.trim()) {
-            query = query.ilike('merchant', `%${filters.search.trim()}%`);
+            query = query.or(
+                `description.ilike.%${filters.search.trim()}%,category.ilike.%${filters.search.trim()}%,subcategory.ilike.%${filters.search.trim()}%`
+            );
         }
 
         // ── Limit ──
@@ -150,15 +124,8 @@ export const getTransactions = async (filters = {}) => {
 
         if (error) throw error;
 
-        // Map DB enum types to app-friendly values & normalize column names
-        const mapped = (data || []).map(row => ({
-            ...row,
-            type: mapTypeFromDB(row.type),
-            date: row.date,
-            source: row.account_source,
-        }));
-
-        return { data: mapped, error: null };
+        console.log('[getTransactions] Fetched:', data?.length ?? 0, 'records');
+        return { data: data || [], error: null };
     } catch (error) {
         console.error('Error fetching transactions:', error);
         return { data: [], error };

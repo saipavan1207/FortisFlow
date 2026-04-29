@@ -111,7 +111,7 @@ function parseSingleSms(sms) {
     
     let category;
     try {
-        category = detectCategory(merchant);
+        category = detectCategory(sms);
     } catch {
         category = 'Other';
     }
@@ -132,7 +132,7 @@ export function parseSmsMessages(rawText) {
     if (!rawText || !rawText.trim()) return [];
 
     const messages = rawText
-        .split(/\n\s*\n|\n(?=[A-Z]{2,}[-:])|(?<=\.)\s*\n/)
+        .split(/\n\s*\n|\n(?=Rs\.?|INR|₹|Spent|Debited|Credited|Transaction|VPA)/i)
         .map(m => m.trim())
         .filter(m => m.length > 10);
 

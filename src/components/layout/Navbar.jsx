@@ -9,9 +9,7 @@ const Navbar = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const location = useLocation()
 
-    const isActive = (path, hash) => {
-        return location.pathname === path && location.hash === hash
-    }
+
 
 
 

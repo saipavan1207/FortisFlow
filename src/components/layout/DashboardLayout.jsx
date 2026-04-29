@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
 import {
     LayoutDashboard, ArrowRightLeft,
     Smartphone, Wallet, Target, BarChart3,
@@ -31,7 +30,6 @@ const SidebarItem = ({ icon: Icon, label, path, active }) => {
 
 const DashboardLayout = () => {
     const location = useLocation();
-    const navigate = useNavigate();
 
     // Mapping router paths to Header titles
     const routeTitles = {
@@ -39,8 +37,6 @@ const DashboardLayout = () => {
         '/transactions': 'Transactions',
         '/goals': 'Goals',
         '/analytics': 'Analytics',
-        '/reports': 'Reports',
-        '/insights': 'AI Insights',
     };
 
     // Determine current page title based on path, fallback to empty
@@ -78,8 +74,6 @@ const DashboardLayout = () => {
                         <h3 className="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-4 px-4">Insights</h3>
                         <div className="space-y-1">
                             <SidebarItem icon={BarChart3} label="Analytics" path="/analytics" active={isActive('/analytics')} />
-                            <SidebarItem icon={PieChart} label="Reports" path="/reports" active={isActive('/reports')} />
-                            <SidebarItem icon={Sparkles} label="AI Insights" path="/insights" active={isActive('/insights')} />
                         </div>
                     </div>
                 </div>

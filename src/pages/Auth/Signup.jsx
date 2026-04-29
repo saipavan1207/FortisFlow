@@ -288,7 +288,7 @@ const Signup = () => {
         setError('')
 
         try {
-            const { data, error } = await supabase.auth.signUp({
+            const { error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -361,7 +361,7 @@ const Signup = () => {
         const code = otp.join('')
 
         try {
-            const { data, error } = await supabase.auth.verifyOtp({
+            const { error } = await supabase.auth.verifyOtp({
                 email,
                 token: code,
                 type: 'email'

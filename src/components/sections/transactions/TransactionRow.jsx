@@ -12,8 +12,7 @@ const SOURCE_LABELS = {
 const TransactionRow = ({ transaction, onDelete }) => {
     const [deleting, setDeleting] = useState(false);
     const isIncome = transaction.type === 'income';
-    const accountSource = SOURCE_LABELS[transaction.account_source] || transaction.account_source || 'UPI';
-    const txnDate = transaction.date;
+    const txnDate = transaction.created_at;
 
     const handleDelete = async (e) => {
         e.stopPropagation();
@@ -50,8 +49,8 @@ const TransactionRow = ({ transaction, onDelete }) => {
                     {isIncome ? <ArrowDownLeft className="w-4 h-4 text-emerald-400" /> : <ArrowUpRight className="w-4 h-4 text-rose-400" />}
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{transaction.merchant || 'Unknown Merchant'}</p>
-                    {transaction.description && <p className="text-xs text-zinc-500 mt-0.5 truncate max-w-[200px]">{transaction.description}</p>}
+                    <p className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{transaction.description || transaction.subcategory || transaction.category || 'Transaction'}</p>
+                    {transaction.category && <p className="text-xs text-zinc-500 mt-0.5 truncate max-w-[200px]">{transaction.category}</p>}
                 </div>
             </div>
 
@@ -62,10 +61,10 @@ const TransactionRow = ({ transaction, onDelete }) => {
                 </span>
             </div>
 
-            {/* Account Source */}
+            {/* Source / Type */}
             <div className="col-span-1 z-10">
                 <span className="text-sm text-zinc-400">
-                    {accountSource}
+                    {transaction.subcategory || '—'}
                 </span>
             </div>
 

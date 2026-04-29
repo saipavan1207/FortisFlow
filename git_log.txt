@@ -1,0 +1,10 @@
+8d64c39 made few module functional with backend
+8650f22 Major ui changes
+a6e44d9 feat(goals): initial Goals page with goal cards, progress tracking, and AI insights
+25c9a47 Merge branch 'main' of https://github.com/saipavan1207/FortisFlow
+d0e0ef9 Merge branch 'main' of https://github.com/saipavan1207/FortisFlow
+fe8ad47 Merge branch 'main' of https://github.com/saipavan1207/FortisFlow
+b22824a Major UI changes and added module pages
+b596635 Added solution page and modified navigation bar
+2609295 Upadated login and authentication
+3492436 Add new UI images and update auth pages

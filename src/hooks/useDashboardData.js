@@ -7,7 +7,7 @@ import { useRealtimeTransactions } from './useRealtimeTransactions';
 export const useDashboardData = () => {
     const [userId, setUserId] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [budgetsVsActual, setBudgetsVsActual] = useState([]);
+    const [budgets, setBudgets] = useState([]);
     const [goalPredictions, setGoalPredictions] = useState([]);
     const [staticLoading, setStaticLoading] = useState(true);
 
@@ -37,10 +37,31 @@ export const useDashboardData = () => {
                 supabase.from('goals').select('*').eq('user_id', user.id).eq('status', 'active'),
             ]);
 
+            // Set fetched data
             setProfile(profileData || null);
+            setBudgets(budgets || []);
+            // Ensure a budget entry exists for the current month (default 50000)
+            const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+            const hasCurrentMonthBudget = (budgets || []).some(b => b.category?.toLowerCase() === currentMonth.toLowerCase());
+            if (!hasCurrentMonthBudget) {
+                (async () => {
+                    try {
+                        await supabase.from('budgets').insert({
+                          user_id: user.id,
+                          category: currentMonth,
+                          Budget: 50000,
+                          month: new Date().getMonth() + 1,
+                          year: new Date().getFullYear(),
+                        });
+                        // Refresh budgets after insertion
+                        const { data: refreshedBudgets } = await supabase.from('budgets').select('*').eq('user_id', user.id);
+                        setBudgets(refreshedBudgets || []);
 
-            // Budget vs Actual — computed from live transactions, kept here for structure
-            setBudgetsVsActual(budgets || []);
+                    } catch (e) {
+                        console.error('Failed to create monthly budget', e);
+                    }
+                })();
+            }
             setGoalPredictions(goals || []);
             setStaticLoading(false);
         };
@@ -56,6 +77,7 @@ export const useDashboardData = () => {
             financialHealth: { score: null },
             monthlyStatsData: [],
             expenseTrend: { value: 0, uiLabel: 'No data', trend: 'neutral' },
+            budgetsVsActual: [],
         };
 
         // HARD RULE: if no real transactions, return all zeros / nulls
@@ -66,12 +88,15 @@ export const useDashboardData = () => {
 
         console.log('[useDashboardData] Processing', transactions.length, 'transactions');
 
-        const now = new Date();
+        const now = transactions.length > 0
+            ? new Date(transactions.reduce((max, t) => Math.max(max, new Date(t.created_at).getTime()), 0))
+            : new Date();
         const last30Start = new Date(now);
         last30Start.setDate(last30Start.getDate() - 30);
 
         const prev30Start = new Date(now);
         prev30Start.setDate(prev30Start.getDate() - 60);
+
 
         let totalIncomeAllTime = 0;
         let totalExpenseAllTime = 0;
@@ -132,6 +157,17 @@ export const useDashboardData = () => {
         const monthlyStatsData = Object.values(monthlyStatsMap)
             .sort((a, b) => a.month.localeCompare(b.month));
 
+        const budgetsVsActual = budgets.map(b => {
+            const actual_spend = categoryTotals[b.category] || 0;
+            const usage_percentage = b.amount > 0 ? (actual_spend / b.amount) * 100 : 0;
+            return {
+                ...b,
+                actual_spend,
+                monthly_limit: b.amount,
+                usage_percentage
+            };
+        });
+
         return {
             spendingStats: {
                 totalSpend: totalExpenseAllTime,
@@ -142,8 +178,9 @@ export const useDashboardData = () => {
             financialHealth: { score },
             monthlyStatsData,
             expenseTrend,
+            budgetsVsActual,
         };
-    }, [transactions]);
+    }, [transactions, budgets]);
 
     // ── AI Insight (debounced, only fires when real data exists) ─────────────
     useEffect(() => {
@@ -175,7 +212,6 @@ export const useDashboardData = () => {
     return {
         loading: staticLoading || txLoading,
         profile,
-        budgetsVsActual,
         goalPredictions,
         transactions,
         aiInsight,

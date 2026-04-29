@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
 import {
@@ -40,9 +41,17 @@ import { useGoalsData } from '../../hooks/useGoalsData'
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
+        
+        const formatLabel = (lbl) => {
+            if (!lbl || !lbl.includes('-')) return lbl;
+            const [year, month] = lbl.split('-');
+            const date = new Date(year, month - 1);
+            return date.toLocaleDateString('default', { month: 'short', year: 'numeric' });
+        };
+        
         return (
             <div className="bg-[#12141c]/90 border border-white/10 p-4 rounded-xl shadow-2xl backdrop-blur-md">
-                <p className="text-white font-bold mb-3">{label} Insights</p>
+                <p className="text-white font-bold mb-3">{formatLabel(label)} Insights</p>
                 {payload.map((entry, index) => (
                     <div key={index} className="flex items-center justify-between gap-4 mb-2 shadow-sm rounded-md mix-blend-screen bg-black/20 p-2 border border-white/5">
                         <div className="flex items-center gap-2">
@@ -70,6 +79,20 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
+const getCategoryEmoji = (category) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('food') || cat.includes('dining') || cat.includes('restaurant') || cat.includes('swiggy') || cat.includes('zomato')) return '🍔';
+    if (cat.includes('transport') || cat.includes('travel') || cat.includes('fuel') || cat.includes('uber') || cat.includes('ola')) return '🚗';
+    if (cat.includes('shopping') || cat.includes('retail') || cat.includes('amazon') || cat.includes('flipkart')) return '🛍️';
+    if (cat.includes('bills') || cat.includes('utilities') || cat.includes('subscription')) return '🧾';
+    if (cat.includes('health') || cat.includes('medical') || cat.includes('pharmacy')) return '💊';
+    if (cat.includes('entertainment') || cat.includes('movies') || cat.includes('netflix')) return '🎬';
+    if (cat.includes('salary') || cat.includes('income')) return '💰';
+    if (cat.includes('investment')) return '📈';
+    if (cat.includes('grocery') || cat.includes('groceries')) return '🛒';
+    return '💳'; // Default
+};
+
 const Dashboard = () => {
     const { loading, spendingStats, categoryBreakdown, financialHealth, monthlyStatsData, aiInsight, expenseTrend, budgetsVsActual, goalPredictions, profile, transactions } = useDashboardData();
     const { activeGoals } = useGoalsData();
@@ -83,21 +106,62 @@ const Dashboard = () => {
     useEffect(() => {
         if (profile?.id && !isBudgetLoaded) {
             const saved = localStorage.getItem(`monthlyBudget_${profile.id}`);
-            if (saved) setMonthlyBudget(parseFloat(saved));
+            if (profile.monthly_budget) {
+                setMonthlyBudget(profile.monthly_budget);
+            } else if (saved) {
+                setMonthlyBudget(parseFloat(saved));
+            }
             setIsBudgetLoaded(true);
         }
-    }, [profile?.id, isBudgetLoaded]);
+    }, [profile?.id, profile?.monthly_budget, isBudgetLoaded]);
 
-    useEffect(() => {
-        if (profile?.id && isBudgetLoaded && monthlyBudget > 0) {
-            localStorage.setItem(`monthlyBudget_${profile.id}`, monthlyBudget.toString());
+    const handleSaveBudget = async (newBudget) => {
+        setMonthlyBudget(newBudget);
+        if (profile?.id) {
+            localStorage.setItem(`monthlyBudget_${profile.id}`, newBudget.toString());
+            try {
+                // Update profile fallback
+                await supabase.from('profiles').update({ monthly_budget: newBudget }).eq('id', profile.id);
+                
+                // Update specific monthly budget
+                const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+                const currentMonth = new Date().getMonth() + 1;
+                const currentYear = new Date().getFullYear();
+
+                const { data: existingBudgets } = await supabase
+                    .from('budgets')
+                    .select('id')
+                    .eq('user_id', profile.id)
+                    .eq('category', currentMonthName)
+                    .eq('month', currentMonth)
+                    .eq('year', currentYear);
+
+                if (existingBudgets && existingBudgets.length > 0) {
+                    await supabase
+                        .from('budgets')
+                        .update({ Budget: newBudget })
+                        .eq('id', existingBudgets[0].id);
+                } else {
+                    await supabase
+                        .from('budgets')
+                        .insert({
+                            user_id: profile.id,
+                            category: currentMonthName,
+                            Budget: newBudget,
+                            month: currentMonth,
+                            year: currentYear
+                        });
+                }
+            } catch (err) {
+                console.error('Failed to save budget to DB', err);
+            }
         }
-    }, [monthlyBudget, profile?.id, isBudgetLoaded]);
+    };
 
     const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
 
-    const safeToSpend = monthlyBudget > 0 ? monthlyBudget - currentSpending : 0;
-    const usedPercentage = monthlyBudget > 0 ? (currentSpending / monthlyBudget) * 100 : 0;
+    const safeToSpend = monthlyBudget > 0 ? Math.max(0, monthlyBudget - currentSpending) : 0;
+    const usedPercentage = monthlyBudget > 0 ? Math.min((currentSpending / monthlyBudget) * 100, 100) : 0;
     const isWarning = usedPercentage > 90;
 
     if (loading) {
@@ -156,7 +220,7 @@ const Dashboard = () => {
             name: c.name,
             amount: c.amount,
             color: ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-emerald-500'][i % 5],
-            icon: UtensilsCrossed,
+            emoji: getCategoryEmoji(c.name),
           }))
         : [];
 
@@ -302,7 +366,12 @@ const Dashboard = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={enhancedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+                                <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => {
+                                    if (!value || !value.includes('-')) return value;
+                                    const [year, month] = value.split('-');
+                                    const date = new Date(year, month - 1);
+                                    return date.toLocaleDateString('default', { month: 'short', year: '2-digit' });
+                                }} />
                                 <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
                                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} content={<CustomTooltip />} />
                                 <Bar dataKey="income" name="Income" fill="#34d399" radius={[4, 4, 0, 0]} barSize={20} />
@@ -328,7 +397,7 @@ const Dashboard = () => {
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex flex-col gap-0.5">
                             <h3 className="text-lg font-bold text-white leading-tight">Top Sources</h3>
-                            <p className="text-sm text-zinc-500 font-medium">Last 30 Days</p>
+                            <p className="text-sm text-zinc-500 font-medium">This Month</p>
                         </div>
                         <button className="text-zinc-500 hover:text-white transition-colors p-1 rounded-md hover:bg-white/5">
                             <ChevronDown className="w-4 h-4" />
@@ -352,7 +421,7 @@ const Dashboard = () => {
                                 <div className="flex items-center justify-between mb-1">
                                     <div className="flex items-center gap-2.5">
                                         <div className={`w-6 h-6 rounded-md ${cat.color} bg-opacity-20 flex items-center justify-center`}>
-                                            <cat.icon className="w-3.5 h-3.5 text-white" />
+                                            <span className="text-[14px] leading-none">{cat.emoji}</span>
                                         </div>
                                         <span className="text-[12px] font-semibold text-zinc-300">{cat.name}</span>
                                     </div>
@@ -375,75 +444,7 @@ const Dashboard = () => {
                 </motion.div>
             </div>
 
-            {/* Insights Row: Budget Tracker & Goal Predictions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Budget Tracking */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.5 }}
-                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
-                >
-                    <div className="flex items-center gap-2 mb-4">
-                        <Wallet className="w-5 h-5 text-blue-400" />
-                        <h3 className="text-lg font-bold text-white leading-tight">Budget vs Actual</h3>
-                    </div>
-                    {budgetsVsActual.length > 0 ? budgetsVsActual.map((b, i) => (
-                        <div key={i} className="mb-4 last:mb-0">
-                            <div className="flex justify-between items-center text-sm mb-1.5">
-                                <span className="text-zinc-300 font-medium flex items-center gap-2">
-                                    {b.category}
-                                    {b.usage_percentage > 100 && (
-                                        <span className="text-[10px] font-extrabold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse">
-                                            Over Budget
-                                        </span>
-                                    )}
-                                </span>
-                                <span className="text-zinc-400">₹{b.actual_spend} / ₹{b.monthly_limit}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-zinc-800/50 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(b.usage_percentage, 100)}%` }}
-                                    className={`h-full rounded-full ${b.usage_percentage > 90 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : 'bg-blue-500'}`}
-                                />
-                            </div>
-                        </div>
-                    )) : (
-                        <p className="text-sm text-zinc-500">No active budgets this month. Setting limits helps control capital.</p>
-                    )}
-                </motion.div>
 
-                {/* Goal Predictions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.6 }}
-                    className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-2xl p-6"
-                >
-                    <div className="flex items-center gap-2 mb-4">
-                        <Target className="w-5 h-5 text-emerald-400" />
-                        <h3 className="text-lg font-bold text-white leading-tight">Goal Forecasts</h3>
-                    </div>
-                    {goalPredictions.length > 0 ? goalPredictions.map((goal, i) => (
-                        <div key={i} className="mb-4 last:mb-0 p-3 bg-zinc-950/50 border border-white/5 rounded-xl">
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-zinc-300 font-bold">{goal.title}</span>
-                                <span className="text-xs font-medium text-zinc-500 shadow-sm">Target: ₹{goal.target_amount}</span>
-                            </div>
-                            <p className="text-xs text-zinc-400 mb-2">Saved: ₹{goal.saved_amount} | Avg Monthly Rate: ₹{Math.round(goal.avg_monthly_saving)}</p>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                                <span className="text-emerald-400 font-bold text-sm tracking-wide">
-                                    {goal.months_left <= 0 ? "Goal Reached! 🎉" : `${Math.ceil(goal.months_left)} months to completion`}
-                                </span>
-                            </div>
-                        </div>
-                    )) : (
-                        <p className="text-sm text-zinc-500">No active goals. Define what you are saving for.</p>
-                    )}
-                </motion.div>
-            </div>
 
             {/* Bottom Action Strip - Polished */}
             <motion.div
@@ -495,7 +496,7 @@ const Dashboard = () => {
                                         <div className="absolute right-0 top-0 bottom-0 w-3 bg-white/40 blur-[2px] rounded-full" />
                                     </motion.div>
                                 </div>
-                                <span className="text-xs text-white font-bold drop-shadow-md">{Math.round(usedPercentage)}%</span>
+                                <span className="text-xs text-white font-bold drop-shadow-md">{Math.min(Math.round(usedPercentage), 100)}%</span>
                             </div>
                         </div>
 
@@ -526,7 +527,7 @@ const Dashboard = () => {
                 isOpen={isBudgetModalOpen}
                 onClose={() => setIsBudgetModalOpen(false)}
                 currentBudget={monthlyBudget}
-                onSave={setMonthlyBudget}
+                onSave={handleSaveBudget}
             />
         </div>
     )

@@ -7,6 +7,7 @@ const UserDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [userEmail, setUserEmail] = useState('');
     const [userName, setUserName] = useState('');
+    const [userAvatar, setUserAvatar] = useState(null);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -21,6 +22,9 @@ const UserDropdown = () => {
                 // If user metadata has a name, use it. Otherwise, default to "User".
                 const name = session.user.user_metadata?.full_name || 'User';
                 setUserName(name);
+
+                const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || null;
+                setUserAvatar(avatar);
             }
         };
         getUserInfo();
@@ -95,9 +99,13 @@ const UserDropdown = () => {
                     }`}
             >
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative w-10 h-10 rounded-full bg-gradient-to-b from-zinc-900 to-[#0a1428] border border-white/5 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-md">
-                        <div className="absolute inset-[2px] rounded-full border border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.4)] pointer-events-none" />
-                        <span className="relative z-10 drop-shadow-sm">{getInitials(userName)}</span>
+                    <div className="relative w-10 h-10 rounded-full bg-gradient-to-b from-zinc-900 to-[#0a1428] border border-white/5 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-md overflow-hidden">
+                        <div className="absolute inset-[2px] rounded-full border border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.4)] pointer-events-none z-20" />
+                        {userAvatar ? (
+                            <img src={userAvatar} alt={userName} className="w-full h-full object-cover relative z-10" />
+                        ) : (
+                            <span className="relative z-10 drop-shadow-sm">{getInitials(userName)}</span>
+                        )}
                     </div>
                     <div className="text-left min-w-0 truncate">
                         <p className="text-sm font-bold text-white truncate">{userName}</p>

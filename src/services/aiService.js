@@ -70,7 +70,7 @@ Do not use bolding or markdown. No introduction.
             topCat = dashboardData.categoryBreakdown[0].name;
         }
         
-        return `• Spending ₹${spendFormatted}\n• ${topCat} is highest. Review next month.`;
+        return `• Spending ₹${spendFormatted} this period\n• Highest spending was on ${topCat}. Consider optimizing.`;
     }
 };
 

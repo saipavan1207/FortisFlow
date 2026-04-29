@@ -78,7 +78,7 @@ const UserMenu = ({ isPreview = false }) => {
         // 1. Try full_name (e.g. "Sai Pavan")
         // 2. Try username
         // 3. Try email prefix
-        const name = user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'
+        const name = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'User'
 
         // Clean extra spaces
         const parts = name.trim().split(/\s+/)
@@ -94,8 +94,9 @@ const UserMenu = ({ isPreview = false }) => {
 
     const initials = getInitials()
 
-    const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
+    const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'
     const displayEmail = user?.email || 'user@example.com'
+    const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
 
     return (
         <div className="p-6 border-t border-white/5 relative" ref={menuRef}>
@@ -136,9 +137,13 @@ const UserMenu = ({ isPreview = false }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 className={`w-full flex items-center gap-3 py-2 rounded-xl transition-colors text-left group ${isOpen ? 'bg-zinc-900/80' : 'hover:bg-zinc-900/50'}`}
             >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[1px] flex-shrink-0">
-                    <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs font-bold text-white">
-                        {initials}
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[1px] flex-shrink-0 relative overflow-hidden">
+                    <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs font-bold text-white overflow-hidden relative">
+                        {avatarUrl ? (
+                            <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                        ) : (
+                            initials
+                        )}
                     </div>
                 </div>
                 <div className="flex-1 min-w-0">

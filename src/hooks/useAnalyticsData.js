@@ -191,5 +191,6 @@ export const useAnalyticsData = (filters) => {
         loading: txLoading || isGeneratingInsight,
         error: txError,
         hasData: Boolean(transactions && transactions.length > 0),
+        transactions,
     };
 };

@@ -3,14 +3,15 @@ const normalize = (text) =>
 
 const rules = [
   { category: "Income", match: ["credited", "salary", "neft"] },
-  { category: "Housing", match: ["rent"] },
-  { category: "Food", match: ["swiggy", "zomato"] },
-  { category: "Shopping", match: ["amazon", "flipkart", "reliance"] },
-  { category: "Transport", match: ["uber", "ola"] },
-  { category: "Travel", match: ["makemytrip", "airlines", "flight"] },
-  { category: "Bills", match: ["electricity", "bill"] },
-  { category: "Subscriptions", match: ["netflix", "spotify"] },
-  { category: "Health", match: ["hospital", "pharmacy", "medical"] },
+  { category: "Housing", match: ["rent", "maintenance"] },
+  { category: "Food", match: ["swiggy", "zomato", "dominos", "burger king", "kfc", "mcdonalds", "starbucks", "foodpanda", "restaurant", "cafe", "food"] },
+  { category: "Groceries", match: ["bigbasket", "zepto", "blinkit", "instamart", "dmart", "grocery", "supermarket", "spencers"] },
+  { category: "Shopping", match: ["amazon", "flipkart", "reliance", "myntra", "apple store", "ajio", "croma", "zara", "h&m", "retail", "store"] },
+  { category: "Transport", match: ["uber", "ola", "rapido", "metro", "irctc", "redbus", "fuel", "petrol", "shell", "hpcl", "bpcl", "indian oil"] },
+  { category: "Travel", match: ["makemytrip", "airlines", "flight", "indigo", "air india", "vistara", "goibibo", "agoda", "booking.com", "cleartrip", "hotel"] },
+  { category: "Bills", match: ["electricity", "bill", "recharge", "airtel", "jio", "vodafone", "vi", "bsnl", "broadband", "water", "gas", "bescom", "mahavitaran"] },
+  { category: "Subscriptions", match: ["netflix", "spotify", "prime", "hotstar", "youtube", "apple music"] },
+  { category: "Health", match: ["hospital", "pharmacy", "medical", "apollo", "1mg", "practo", "pharmeasy", "clinic"] },
 ];
 
 export const detectCategory = (sms) => {

@@ -11,13 +11,11 @@ export const addTransaction = async (transactionData) => {
             amount: parseFloat(transactionData.amount),
             type: transactionData.type,          // 'income' | 'expense'
             category: transactionData.category,
-            subcategory: transactionData.subcategory || null,
+            subcategory: transactionData.subcategory || transactionData.merchant || null,
+            merchant: transactionData.merchant || null,
+            account_source: transactionData.account_source || transactionData.source || null,
             description: transactionData.description || null,
-            // created_at is set by Supabase default (now()); only override if
-            // the user explicitly supplies a custom date from the modal.
-            ...(transactionData.created_at && {
-                created_at: new Date(transactionData.created_at).toISOString(),
-            }),
+            created_at: transactionData.created_at ? new Date(transactionData.created_at).toISOString() : (transactionData.date ? new Date(transactionData.date).toISOString() : new Date().toISOString()),
         };
 
         console.log('[addTransaction] Inserting record:', record);
@@ -49,11 +47,11 @@ export const bulkAddTransactions = async (transactions) => {
             amount: parseFloat(txn.amount),
             type: txn.type,
             category: txn.category,
-            subcategory: txn.subcategory || null,
+            subcategory: txn.subcategory || txn.merchant || null,
+            merchant: txn.merchant || null,
+            account_source: txn.account_source || txn.source || null,
             description: txn.description || null,
-            ...(txn.created_at && {
-                created_at: new Date(txn.created_at).toISOString(),
-            }),
+            created_at: txn.created_at ? new Date(txn.created_at).toISOString() : (txn.date ? new Date(txn.date).toISOString() : new Date().toISOString()),
         }));
 
         const { data, error } = await supabase

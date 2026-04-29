@@ -1,4 +1,4 @@
--- 1️⃣ PROFILES TABLE
+3-- 1️⃣ PROFILES TABLE
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,

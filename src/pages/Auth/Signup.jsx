@@ -326,7 +326,7 @@ const Signup = () => {
         await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'http://localhost:5173/dashboard'
+                redirectTo: `${window.location.origin}/dashboard`
             }
         })
     }

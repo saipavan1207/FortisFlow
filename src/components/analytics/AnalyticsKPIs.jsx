@@ -20,7 +20,7 @@ const KPICard = ({ title, value, icon: Icon, colorClass, delay = 0 }) => (
     </motion.div>
 );
 
-const AnalyticsKPIs = ({ kpis }) => {
+const AnalyticsKPIs = ({ kpis, categoryFilter }) => {
     const { total_income, total_expense, net_savings, top_category } = kpis;
 
     const formatCurrency = (amount) => {
@@ -30,35 +30,41 @@ const AnalyticsKPIs = ({ kpis }) => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className={`grid gap-4 mb-6 ${categoryFilter ? 'grid-cols-1 max-w-sm' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+            {!categoryFilter && (
+                <KPICard 
+                    title="Total Income" 
+                    value={formatCurrency(total_income)} 
+                    icon={TrendingUp} 
+                    colorClass="from-green-500 to-emerald-600"
+                    delay={0}
+                />
+            )}
             <KPICard 
-                title="Total Income" 
-                value={formatCurrency(total_income)} 
-                icon={TrendingUp} 
-                colorClass="from-green-500 to-emerald-600"
-                delay={0}
-            />
-            <KPICard 
-                title="Total Expense" 
+                title={categoryFilter ? `${categoryFilter} Expense` : "Total Expense"} 
                 value={formatCurrency(total_expense)} 
                 icon={TrendingDown} 
                 colorClass="from-red-500 to-rose-600"
                 delay={0.1}
             />
-            <KPICard 
-                title="Net Savings" 
-                value={formatCurrency(net_savings)} 
-                icon={Wallet} 
-                colorClass="from-blue-500 to-indigo-600"
-                delay={0.2}
-            />
-            <KPICard 
-                title="Top Category" 
-                value={top_category} 
-                icon={Target} 
-                colorClass="from-purple-500 to-fuchsia-600"
-                delay={0.3}
-            />
+            {!categoryFilter && (
+                <>
+                    <KPICard 
+                        title="Net Savings" 
+                        value={formatCurrency(net_savings)} 
+                        icon={Wallet} 
+                        colorClass="from-blue-500 to-indigo-600"
+                        delay={0.2}
+                    />
+                    <KPICard 
+                        title="Top Category" 
+                        value={top_category} 
+                        icon={Target} 
+                        colorClass="from-purple-500 to-fuchsia-600"
+                        delay={0.3}
+                    />
+                </>
+            )}
         </div>
     );
 };

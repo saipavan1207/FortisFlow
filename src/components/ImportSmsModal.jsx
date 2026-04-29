@@ -36,16 +36,16 @@ Rs. 450.00 debited from A/C XXXX1234 via UPI to ZOMATO on 08 Oct 25. Avl Bal Rs.
 Rs. 690.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Oct 25. Avl Bal Rs. 50,870.00
 Rs. 520.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Oct 25. Avl Bal Rs. 50,350.00
 Rs. 880.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Oct 25. Avl Bal Rs. 49,470.00
-Rs. 1,200.00 debited from A/C XXXX1234 via UPI to UBER on 02 Oct 25. Avl Bal Rs. 48,270.00
-Rs. 2,400.00 debited from A/C XXXX1234 via UPI to OLA on 03 Oct 25. Avl Bal Rs. 45,870.00
-Rs. 1,800.00 debited from A/C XXXX1234 via UPI to UBER on 04 Oct 25. Avl Bal Rs. 44,070.00
-Rs. 3,000.00 debited from A/C XXXX1234 via UPI to OLA on 06 Oct 25. Avl Bal Rs. 41,070.00
-Rs. 2,100.00 debited from A/C XXXX1234 via UPI to UBER on 07 Oct 25. Avl Bal Rs. 38,970.00
-Rs. 3,500.00 debited from A/C XXXX1234 via UPI to OLA on 09 Oct 25. Avl Bal Rs. 35,470.00
-Rs. 1,900.00 debited from A/C XXXX1234 via UPI to UBER on 11 Oct 25. Avl Bal Rs. 33,570.00
-Rs. 4,000.00 debited from A/C XXXX1234 via UPI to OLA on 13 Oct 25. Avl Bal Rs. 29,570.00
-Rs. 2,200.00 debited from A/C XXXX1234 via UPI to UBER on 15 Oct 25. Avl Bal Rs. 27,370.00
-Rs. 3,300.00 debited from A/C XXXX1234 via UPI to OLA on 18 Oct 25. Avl Bal Rs. 24,070.00
+Rs. 120.00 debited from A/C XXXX1234 via UPI to UBER on 02 Oct 25. Avl Bal Rs. 49,350.00
+Rs. 240.00 debited from A/C XXXX1234 via UPI to OLA on 03 Oct 25. Avl Bal Rs. 49,110.00
+Rs. 180.00 debited from A/C XXXX1234 via UPI to UBER on 04 Oct 25. Avl Bal Rs. 48,930.00
+Rs. 300.00 debited from A/C XXXX1234 via UPI to OLA on 06 Oct 25. Avl Bal Rs. 48,630.00
+Rs. 210.00 debited from A/C XXXX1234 via UPI to UBER on 07 Oct 25. Avl Bal Rs. 48,420.00
+Rs. 350.00 debited from A/C XXXX1234 via UPI to OLA on 09 Oct 25. Avl Bal Rs. 48,070.00
+Rs. 190.00 debited from A/C XXXX1234 via UPI to UBER on 11 Oct 25. Avl Bal Rs. 47,880.00
+Rs. 400.00 debited from A/C XXXX1234 via UPI to OLA on 13 Oct 25. Avl Bal Rs. 47,480.00
+Rs. 220.00 debited from A/C XXXX1234 via UPI to UBER on 15 Oct 25. Avl Bal Rs. 47,260.00
+Rs. 330.00 debited from A/C XXXX1234 via UPI to OLA on 18 Oct 25. Avl Bal Rs. 46,930.00
 Rs. 1,200.00 spent on HDFC Card ending 5678 at AMAZON on 05 Oct 25.
 Rs. 2,300.00 spent on HDFC Card ending 5678 at FLIPKART on 10 Oct 25.
 Rs. 850.00 spent on HDFC Card ending 5678 at MYNTRA on 14 Oct 25.
@@ -62,16 +62,16 @@ Rs. 1,300.00 debited from A/C XXXX1234 via UPI to ZOMATO on 08 Nov 25. Avl Bal R
 Rs. 850.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Nov 25. Avl Bal Rs. 52,350.00
 Rs. 750.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Nov 25. Avl Bal Rs. 51,600.00
 Rs. 1,400.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Nov 25. Avl Bal Rs. 50,200.00
-Rs. 2,200.00 debited from A/C XXXX1234 via UPI to OLA on 02 Nov 25. Avl Bal Rs. 48,000.00
-Rs. 3,500.00 debited from A/C XXXX1234 via UPI to UBER on 03 Nov 25. Avl Bal Rs. 44,500.00
-Rs. 4,200.00 debited from A/C XXXX1234 via UPI to OLA on 04 Nov 25. Avl Bal Rs. 40,300.00
-Rs. 2,800.00 debited from A/C XXXX1234 via UPI to UBER on 05 Nov 25. Avl Bal Rs. 37,500.00
-Rs. 5,000.00 debited from A/C XXXX1234 via UPI to OLA on 06 Nov 25. Avl Bal Rs. 32,500.00
-Rs. 3,100.00 debited from A/C XXXX1234 via UPI to UBER on 07 Nov 25. Avl Bal Rs. 29,400.00
-Rs. 4,500.00 debited from A/C XXXX1234 via UPI to OLA on 08 Nov 25. Avl Bal Rs. 24,900.00
-Rs. 3,900.00 debited from A/C XXXX1234 via UPI to UBER on 09 Nov 25. Avl Bal Rs. 21,000.00
-Rs. 6,000.00 debited from A/C XXXX1234 via UPI to OLA on 10 Nov 25. Avl Bal Rs. 15,000.00
-Rs. 2,500.00 debited from A/C XXXX1234 via UPI to UBER on 11 Nov 25. Avl Bal Rs. 12,500.00
+Rs. 220.00 debited from A/C XXXX1234 via UPI to OLA on 02 Nov 25. Avl Bal Rs. 49,980.00
+Rs. 350.00 debited from A/C XXXX1234 via UPI to UBER on 03 Nov 25. Avl Bal Rs. 49,630.00
+Rs. 420.00 debited from A/C XXXX1234 via UPI to OLA on 04 Nov 25. Avl Bal Rs. 49,210.00
+Rs. 280.00 debited from A/C XXXX1234 via UPI to UBER on 05 Nov 25. Avl Bal Rs. 48,930.00
+Rs. 500.00 debited from A/C XXXX1234 via UPI to OLA on 06 Nov 25. Avl Bal Rs. 48,430.00
+Rs. 310.00 debited from A/C XXXX1234 via UPI to UBER on 07 Nov 25. Avl Bal Rs. 48,120.00
+Rs. 450.00 debited from A/C XXXX1234 via UPI to OLA on 08 Nov 25. Avl Bal Rs. 47,670.00
+Rs. 390.00 debited from A/C XXXX1234 via UPI to UBER on 09 Nov 25. Avl Bal Rs. 47,280.00
+Rs. 600.00 debited from A/C XXXX1234 via UPI to OLA on 10 Nov 25. Avl Bal Rs. 46,680.00
+Rs. 250.00 debited from A/C XXXX1234 via UPI to UBER on 11 Nov 25. Avl Bal Rs. 46,430.00
 Rs. 4,500.00 spent on HDFC Card ending 5678 at AMAZON on 12 Nov 25.
 Rs. 3,800.00 spent on HDFC Card ending 5678 at FLIPKART on 14 Nov 25.
 Rs. 2,200.00 spent on HDFC Card ending 5678 at MYNTRA on 16 Nov 25.
@@ -90,16 +90,16 @@ Rs. 760.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Dec 25. Avl Bal Rs.
 Rs. 410.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Dec 25. Avl Bal Rs. 56,330.00
 Rs. 990.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Dec 25. Avl Bal Rs. 55,340.00
 
-Rs. 1,500.00 debited from A/C XXXX1234 via UPI to UBER on 02 Dec 25. Avl Bal Rs. 53,840.00
-Rs. 2,600.00 debited from A/C XXXX1234 via UPI to OLA on 03 Dec 25. Avl Bal Rs. 51,240.00
-Rs. 2,000.00 debited from A/C XXXX1234 via UPI to UBER on 04 Dec 25. Avl Bal Rs. 49,240.00
-Rs. 3,100.00 debited from A/C XXXX1234 via UPI to OLA on 06 Dec 25. Avl Bal Rs. 46,140.00
-Rs. 2,300.00 debited from A/C XXXX1234 via UPI to UBER on 07 Dec 25. Avl Bal Rs. 43,840.00
-Rs. 3,700.00 debited from A/C XXXX1234 via UPI to OLA on 08 Dec 25. Avl Bal Rs. 40,140.00
-Rs. 2,100.00 debited from A/C XXXX1234 via UPI to UBER on 10 Dec 25. Avl Bal Rs. 38,040.00
-Rs. 4,200.00 debited from A/C XXXX1234 via UPI to OLA on 12 Dec 25. Avl Bal Rs. 33,840.00
-Rs. 2,400.00 debited from A/C XXXX1234 via UPI to UBER on 14 Dec 25. Avl Bal Rs. 31,440.00
-Rs. 3,600.00 debited from A/C XXXX1234 via UPI to OLA on 16 Dec 25. Avl Bal Rs. 27,840.00
+Rs. 150.00 debited from A/C XXXX1234 via UPI to UBER on 02 Dec 25. Avl Bal Rs. 55,190.00
+Rs. 260.00 debited from A/C XXXX1234 via UPI to OLA on 03 Dec 25. Avl Bal Rs. 54,930.00
+Rs. 200.00 debited from A/C XXXX1234 via UPI to UBER on 04 Dec 25. Avl Bal Rs. 54,730.00
+Rs. 310.00 debited from A/C XXXX1234 via UPI to OLA on 06 Dec 25. Avl Bal Rs. 54,420.00
+Rs. 230.00 debited from A/C XXXX1234 via UPI to UBER on 07 Dec 25. Avl Bal Rs. 54,190.00
+Rs. 370.00 debited from A/C XXXX1234 via UPI to OLA on 08 Dec 25. Avl Bal Rs. 53,820.00
+Rs. 210.00 debited from A/C XXXX1234 via UPI to UBER on 10 Dec 25. Avl Bal Rs. 53,610.00
+Rs. 420.00 debited from A/C XXXX1234 via UPI to OLA on 12 Dec 25. Avl Bal Rs. 53,190.00
+Rs. 240.00 debited from A/C XXXX1234 via UPI to UBER on 14 Dec 25. Avl Bal Rs. 52,950.00
+Rs. 360.00 debited from A/C XXXX1234 via UPI to OLA on 16 Dec 25. Avl Bal Rs. 52,590.00
 
 Rs. 1,100.00 spent on HDFC Card ending 5678 at AMAZON on 05 Dec 25.
 Rs. 2,400.00 spent on HDFC Card ending 5678 at FLIPKART on 10 Dec 25.
@@ -119,16 +119,16 @@ Rs. 760.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Jan 26. Avl Bal Rs.
 Rs. 430.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Jan 26. Avl Bal Rs. 59,970.00
 Rs. 880.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Jan 26. Avl Bal Rs. 59,090.00
 
-Rs. 1,400.00 debited from A/C XXXX1234 via UPI to UBER on 02 Jan 26. Avl Bal Rs. 57,690.00
-Rs. 2,800.00 debited from A/C XXXX1234 via UPI to OLA on 03 Jan 26. Avl Bal Rs. 54,890.00
-Rs. 2,100.00 debited from A/C XXXX1234 via UPI to UBER on 04 Jan 26. Avl Bal Rs. 52,790.00
-Rs. 3,200.00 debited from A/C XXXX1234 via UPI to OLA on 06 Jan 26. Avl Bal Rs. 49,590.00
-Rs. 2,400.00 debited from A/C XXXX1234 via UPI to UBER on 07 Jan 26. Avl Bal Rs. 47,190.00
-Rs. 3,900.00 debited from A/C XXXX1234 via UPI to OLA on 08 Jan 26. Avl Bal Rs. 43,290.00
-Rs. 2,200.00 debited from A/C XXXX1234 via UPI to UBER on 10 Jan 26. Avl Bal Rs. 41,090.00
-Rs. 4,100.00 debited from A/C XXXX1234 via UPI to OLA on 12 Jan 26. Avl Bal Rs. 36,990.00
-Rs. 2,600.00 debited from A/C XXXX1234 via UPI to UBER on 14 Jan 26. Avl Bal Rs. 34,390.00
-Rs. 3,700.00 debited from A/C XXXX1234 via UPI to OLA on 16 Jan 26. Avl Bal Rs. 30,690.00
+Rs. 140.00 debited from A/C XXXX1234 via UPI to UBER on 02 Jan 26. Avl Bal Rs. 58,950.00
+Rs. 280.00 debited from A/C XXXX1234 via UPI to OLA on 03 Jan 26. Avl Bal Rs. 58,670.00
+Rs. 210.00 debited from A/C XXXX1234 via UPI to UBER on 04 Jan 26. Avl Bal Rs. 58,460.00
+Rs. 320.00 debited from A/C XXXX1234 via UPI to OLA on 06 Jan 26. Avl Bal Rs. 58,140.00
+Rs. 240.00 debited from A/C XXXX1234 via UPI to UBER on 07 Jan 26. Avl Bal Rs. 57,900.00
+Rs. 390.00 debited from A/C XXXX1234 via UPI to OLA on 08 Jan 26. Avl Bal Rs. 57,510.00
+Rs. 220.00 debited from A/C XXXX1234 via UPI to UBER on 10 Jan 26. Avl Bal Rs. 57,290.00
+Rs. 410.00 debited from A/C XXXX1234 via UPI to OLA on 12 Jan 26. Avl Bal Rs. 56,880.00
+Rs. 260.00 debited from A/C XXXX1234 via UPI to UBER on 14 Jan 26. Avl Bal Rs. 56,620.00
+Rs. 370.00 debited from A/C XXXX1234 via UPI to OLA on 16 Jan 26. Avl Bal Rs. 56,250.00
 
 Rs. 1,500.00 spent on HDFC Card ending 5678 at AMAZON on 05 Jan 26.
 Rs. 2,600.00 spent on HDFC Card ending 5678 at FLIPKART on 10 Jan 26.
@@ -147,16 +147,16 @@ Rs. 1,400.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Feb 26. Avl Bal R
 Rs. 850.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Feb 26. Avl Bal Rs. 59,150.00
 Rs. 1,200.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Feb 26. Avl Bal Rs. 57,950.00
 
-Rs. 2,000.00 debited from A/C XXXX1234 via UPI to UBER on 02 Feb 26. Avl Bal Rs. 55,950.00
-Rs. 3,200.00 debited from A/C XXXX1234 via UPI to OLA on 03 Feb 26. Avl Bal Rs. 52,750.00
-Rs. 2,800.00 debited from A/C XXXX1234 via UPI to UBER on 04 Feb 26. Avl Bal Rs. 49,950.00
-Rs. 4,500.00 debited from A/C XXXX1234 via UPI to OLA on 05 Feb 26. Avl Bal Rs. 45,450.00
-Rs. 3,100.00 debited from A/C XXXX1234 via UPI to UBER on 06 Feb 26. Avl Bal Rs. 42,350.00
-Rs. 5,000.00 debited from A/C XXXX1234 via UPI to OLA on 07 Feb 26. Avl Bal Rs. 37,350.00
-Rs. 2,700.00 debited from A/C XXXX1234 via UPI to UBER on 08 Feb 26. Avl Bal Rs. 34,650.00
-Rs. 4,800.00 debited from A/C XXXX1234 via UPI to OLA on 09 Feb 26. Avl Bal Rs. 29,850.00
-Rs. 3,500.00 debited from A/C XXXX1234 via UPI to UBER on 10 Feb 26. Avl Bal Rs. 26,350.00
-Rs. 5,200.00 debited from A/C XXXX1234 via UPI to OLA on 11 Feb 26. Avl Bal Rs. 21,150.00
+Rs. 200.00 debited from A/C XXXX1234 via UPI to UBER on 02 Feb 26. Avl Bal Rs. 57,750.00
+Rs. 320.00 debited from A/C XXXX1234 via UPI to OLA on 03 Feb 26. Avl Bal Rs. 57,430.00
+Rs. 280.00 debited from A/C XXXX1234 via UPI to UBER on 04 Feb 26. Avl Bal Rs. 57,150.00
+Rs. 450.00 debited from A/C XXXX1234 via UPI to OLA on 05 Feb 26. Avl Bal Rs. 56,700.00
+Rs. 310.00 debited from A/C XXXX1234 via UPI to UBER on 06 Feb 26. Avl Bal Rs. 56,390.00
+Rs. 500.00 debited from A/C XXXX1234 via UPI to OLA on 07 Feb 26. Avl Bal Rs. 55,890.00
+Rs. 270.00 debited from A/C XXXX1234 via UPI to UBER on 08 Feb 26. Avl Bal Rs. 55,620.00
+Rs. 480.00 debited from A/C XXXX1234 via UPI to OLA on 09 Feb 26. Avl Bal Rs. 55,140.00
+Rs. 350.00 debited from A/C XXXX1234 via UPI to UBER on 10 Feb 26. Avl Bal Rs. 54,790.00
+Rs. 520.00 debited from A/C XXXX1234 via UPI to OLA on 11 Feb 26. Avl Bal Rs. 54,270.00
 
 Rs. 3,000.00 spent on HDFC Card ending 5678 at MAKEMYTRIP on 18 Feb 26.
 Rs. 4,500.00 spent on HDFC Card ending 5678 at APPLE STORE on 24 Feb 26.
@@ -174,16 +174,16 @@ Rs. 820.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Mar 26. Avl Bal Rs.
 Rs. 540.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Mar 26. Avl Bal Rs. 63,630.00
 Rs. 1,050.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Mar 26. Avl Bal Rs. 62,580.00
 
-Rs. 2,200.00 debited from A/C XXXX1234 via UPI to UBER on 02 Mar 26. Avl Bal Rs. 60,380.00
-Rs. 3,400.00 debited from A/C XXXX1234 via UPI to OLA on 03 Mar 26. Avl Bal Rs. 56,980.00
-Rs. 2,800.00 debited from A/C XXXX1234 via UPI to UBER on 04 Mar 26. Avl Bal Rs. 54,180.00
-Rs. 4,500.00 debited from A/C XXXX1234 via UPI to OLA on 05 Mar 26. Avl Bal Rs. 49,680.00
-Rs. 3,000.00 debited from A/C XXXX1234 via UPI to UBER on 06 Mar 26. Avl Bal Rs. 46,680.00
-Rs. 5,000.00 debited from A/C XXXX1234 via UPI to OLA on 07 Mar 26. Avl Bal Rs. 41,680.00
-Rs. 2,600.00 debited from A/C XXXX1234 via UPI to UBER on 08 Mar 26. Avl Bal Rs. 39,080.00
-Rs. 4,800.00 debited from A/C XXXX1234 via UPI to OLA on 09 Mar 26. Avl Bal Rs. 34,280.00
-Rs. 3,500.00 debited from A/C XXXX1234 via UPI to UBER on 10 Mar 26. Avl Bal Rs. 30,780.00
-Rs. 5,200.00 debited from A/C XXXX1234 via UPI to OLA on 11 Mar 26. Avl Bal Rs. 25,580.00
+Rs. 220.00 debited from A/C XXXX1234 via UPI to UBER on 02 Mar 26. Avl Bal Rs. 62,360.00
+Rs. 340.00 debited from A/C XXXX1234 via UPI to OLA on 03 Mar 26. Avl Bal Rs. 62,020.00
+Rs. 280.00 debited from A/C XXXX1234 via UPI to UBER on 04 Mar 26. Avl Bal Rs. 61,740.00
+Rs. 450.00 debited from A/C XXXX1234 via UPI to OLA on 05 Mar 26. Avl Bal Rs. 61,290.00
+Rs. 300.00 debited from A/C XXXX1234 via UPI to UBER on 06 Mar 26. Avl Bal Rs. 60,990.00
+Rs. 500.00 debited from A/C XXXX1234 via UPI to OLA on 07 Mar 26. Avl Bal Rs. 60,490.00
+Rs. 260.00 debited from A/C XXXX1234 via UPI to UBER on 08 Mar 26. Avl Bal Rs. 60,230.00
+Rs. 480.00 debited from A/C XXXX1234 via UPI to OLA on 09 Mar 26. Avl Bal Rs. 59,750.00
+Rs. 350.00 debited from A/C XXXX1234 via UPI to UBER on 10 Mar 26. Avl Bal Rs. 59,400.00
+Rs. 520.00 debited from A/C XXXX1234 via UPI to OLA on 11 Mar 26. Avl Bal Rs. 58,880.00
 
 Rs. 5,000.00 spent on HDFC Card ending 5678 at AMAZON on 15 Mar 26.
 Rs. 8,000.00 spent on HDFC Card ending 5678 at INDIGO AIRLINES on 20 Mar 26.
@@ -201,16 +201,16 @@ Rs. 750.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 Apr 26. Avl Bal Rs.
 Rs. 420.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 Apr 26. Avl Bal Rs. 67,030.00
 Rs. 880.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 Apr 26. Avl Bal Rs. 66,150.00
 
-Rs. 2,000.00 debited from A/C XXXX1234 via UPI to UBER on 02 Apr 26. Avl Bal Rs. 64,150.00
-Rs. 3,000.00 debited from A/C XXXX1234 via UPI to OLA on 03 Apr 26. Avl Bal Rs. 61,150.00
-Rs. 2,500.00 debited from A/C XXXX1234 via UPI to UBER on 04 Apr 26. Avl Bal Rs. 58,650.00
-Rs. 3,500.00 debited from A/C XXXX1234 via UPI to OLA on 05 Apr 26. Avl Bal Rs. 55,150.00
-Rs. 2,700.00 debited from A/C XXXX1234 via UPI to UBER on 06 Apr 26. Avl Bal Rs. 52,450.00
-Rs. 4,000.00 debited from A/C XXXX1234 via UPI to OLA on 07 Apr 26. Avl Bal Rs. 48,450.00
-Rs. 2,300.00 debited from A/C XXXX1234 via UPI to UBER on 08 Apr 26. Avl Bal Rs. 46,150.00
-Rs. 4,200.00 debited from A/C XXXX1234 via UPI to OLA on 09 Apr 26. Avl Bal Rs. 41,950.00
-Rs. 3,000.00 debited from A/C XXXX1234 via UPI to UBER on 10 Apr 26. Avl Bal Rs. 38,950.00
-Rs. 4,500.00 debited from A/C XXXX1234 via UPI to OLA on 11 Apr 26. Avl Bal Rs. 34,450.00
+Rs. 200.00 debited from A/C XXXX1234 via UPI to UBER on 02 Apr 26. Avl Bal Rs. 65,950.00
+Rs. 300.00 debited from A/C XXXX1234 via UPI to OLA on 03 Apr 26. Avl Bal Rs. 65,650.00
+Rs. 250.00 debited from A/C XXXX1234 via UPI to UBER on 04 Apr 26. Avl Bal Rs. 65,400.00
+Rs. 350.00 debited from A/C XXXX1234 via UPI to OLA on 05 Apr 26. Avl Bal Rs. 65,050.00
+Rs. 270.00 debited from A/C XXXX1234 via UPI to UBER on 06 Apr 26. Avl Bal Rs. 64,780.00
+Rs. 400.00 debited from A/C XXXX1234 via UPI to OLA on 07 Apr 26. Avl Bal Rs. 64,380.00
+Rs. 230.00 debited from A/C XXXX1234 via UPI to UBER on 08 Apr 26. Avl Bal Rs. 64,150.00
+Rs. 420.00 debited from A/C XXXX1234 via UPI to OLA on 09 Apr 26. Avl Bal Rs. 63,730.00
+Rs. 300.00 debited from A/C XXXX1234 via UPI to UBER on 10 Apr 26. Avl Bal Rs. 63,430.00
+Rs. 450.00 debited from A/C XXXX1234 via UPI to OLA on 11 Apr 26. Avl Bal Rs. 62,980.00
 
 Rs. 2,200.00 spent on HDFC Card ending 5678 at FLIPKART on 14 Apr 26.
 Rs. 1,800.00 spent on HDFC Card ending 5678 at AMAZON on 18 Apr 26.
@@ -228,16 +228,16 @@ Rs. 1,400.00 debited from A/C XXXX1234 via UPI to SWIGGY on 09 May 26. Avl Bal R
 Rs. 750.00 debited from A/C XXXX1234 via UPI to BURGER KING on 10 May 26. Avl Bal Rs. 66,350.00
 Rs. 1,200.00 debited from A/C XXXX1234 via UPI to DOMINOS on 11 May 26. Avl Bal Rs. 65,150.00
 
-Rs. 2,200.00 debited from A/C XXXX1234 via UPI to UBER on 02 May 26. Avl Bal Rs. 62,950.00
-Rs. 3,400.00 debited from A/C XXXX1234 via UPI to OLA on 03 May 26. Avl Bal Rs. 59,550.00
-Rs. 2,800.00 debited from A/C XXXX1234 via UPI to UBER on 04 May 26. Avl Bal Rs. 56,750.00
-Rs. 4,500.00 debited from A/C XXXX1234 via UPI to OLA on 05 May 26. Avl Bal Rs. 52,250.00
-Rs. 3,000.00 debited from A/C XXXX1234 via UPI to UBER on 06 May 26. Avl Bal Rs. 49,250.00
-Rs. 5,000.00 debited from A/C XXXX1234 via UPI to OLA on 07 May 26. Avl Bal Rs. 44,250.00
-Rs. 2,600.00 debited from A/C XXXX1234 via UPI to UBER on 08 May 26. Avl Bal Rs. 41,650.00
-Rs. 4,800.00 debited from A/C XXXX1234 via UPI to OLA on 09 May 26. Avl Bal Rs. 36,850.00
-Rs. 3,500.00 debited from A/C XXXX1234 via UPI to UBER on 10 May 26. Avl Bal Rs. 33,350.00
-Rs. 5,200.00 debited from A/C XXXX1234 via UPI to OLA on 11 May 26. Avl Bal Rs. 28,150.00
+Rs. 220.00 debited from A/C XXXX1234 via UPI to UBER on 02 May 26. Avl Bal Rs. 64,930.00
+Rs. 340.00 debited from A/C XXXX1234 via UPI to OLA on 03 May 26. Avl Bal Rs. 64,590.00
+Rs. 280.00 debited from A/C XXXX1234 via UPI to UBER on 04 May 26. Avl Bal Rs. 64,310.00
+Rs. 450.00 debited from A/C XXXX1234 via UPI to OLA on 05 May 26. Avl Bal Rs. 63,860.00
+Rs. 300.00 debited from A/C XXXX1234 via UPI to UBER on 06 May 26. Avl Bal Rs. 63,560.00
+Rs. 500.00 debited from A/C XXXX1234 via UPI to OLA on 07 May 26. Avl Bal Rs. 63,060.00
+Rs. 260.00 debited from A/C XXXX1234 via UPI to UBER on 08 May 26. Avl Bal Rs. 62,800.00
+Rs. 480.00 debited from A/C XXXX1234 via UPI to OLA on 09 May 26. Avl Bal Rs. 62,320.00
+Rs. 350.00 debited from A/C XXXX1234 via UPI to UBER on 10 May 26. Avl Bal Rs. 61,970.00
+Rs. 520.00 debited from A/C XXXX1234 via UPI to OLA on 11 May 26. Avl Bal Rs. 61,450.00
 
 Rs. 3,500.00 spent on HDFC Card ending 5678 at FLIPKART on 18 May 26.
 Rs. 2,800.00 spent on HDFC Card ending 5678 at MYNTRA on 22 May 26.`;

@@ -88,7 +88,7 @@ const Analytics = () => {
                     </div>
                 ) : (
                     <>
-                        <AnalyticsKPIs kpis={data.kpis} />
+                        <AnalyticsKPIs kpis={data.kpis} categoryFilter={filters.categoryFilter} />
                         <AnalyticsCharts 
                             timeSeries={data.timeSeries}
                             categoryBreakdown={data.categoryBreakdown}

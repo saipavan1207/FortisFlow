@@ -10,6 +10,7 @@ interface GoalCardProps {
   onContribute: (id: string, amount: number) => void;
   onArchive?: (id: string) => void;
   isContributing?: boolean;
+  budgetHeadroom?: number | null;
 }
 
 const IconRenderer = ({ name, className }: { name?: string; className?: string }) => {
@@ -87,12 +88,38 @@ const getInsightMessage = (
   return <>Start contributing to unlock your tailored savings forecast.</>;
 };
 
-export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, onArchive, isContributing = false }) => {
+export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, onArchive, isContributing = false, budgetHeadroom }) => {
   const { id, title, target_amount, saved_amount, deadline, icon, glowType, theme, analytics, status } = goal;
 
   const currentAmount = Number(saved_amount) || 0;
   const targetAmount = Number(target_amount) || 0;
   const remaining = Math.max(targetAmount - currentAmount, 0);
+
+  // Ideal contribution: AI-stored recommendation or calculated from remaining/deadline
+  const idealContribution = (() => {
+    if (goal.recommended_monthly_contribution && goal.recommended_monthly_contribution > 0) {
+      return Math.ceil(goal.recommended_monthly_contribution);
+    }
+    const monthsLeft = Math.max(
+      1,
+      (new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)
+    );
+    return Math.max(Math.ceil(remaining / monthsLeft), 500);
+  })();
+
+  // Effective contribution: capped at current budget headroom
+  const isBudgetCapped =
+    budgetHeadroom !== null &&
+    budgetHeadroom !== undefined &&
+    budgetHeadroom >= 0 &&
+    idealContribution > budgetHeadroom;
+
+  const effectiveContribution = isBudgetCapped
+    ? Math.max(Math.floor(budgetHeadroom!), 0)
+    : idealContribution;
+
+  const contributionLabel = `₹${effectiveContribution.toLocaleString('en-IN')}`;
+  const isZeroHeadroom = isBudgetCapped && effectiveContribution === 0;
 
   const estimatedDays = analytics.estimatedDaysLeft;
   const progress = analytics.progress;
@@ -262,10 +289,10 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, onArchiv
           )}
           
           <motion.button
-            whileHover={isComplete || isContributing ? {} : { scale: 1.015, y: -1 }}
-            whileTap={isComplete || isContributing ? {} : { scale: 0.97 }}
-            onClick={() => onContribute(id, 1000)}
-            disabled={isComplete || isContributing}
+            whileHover={isComplete || isContributing || isZeroHeadroom ? {} : { scale: 1.015, y: -1 }}
+            whileTap={isComplete || isContributing || isZeroHeadroom ? {} : { scale: 0.97 }}
+            onClick={() => !isZeroHeadroom && onContribute(id, effectiveContribution)}
+            disabled={isComplete || isContributing || isZeroHeadroom}
             className={`
               w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-[14px]
               transition-all duration-200 relative overflow-hidden flex-1
@@ -273,7 +300,9 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, onArchiv
                 ? 'bg-zinc-900/50 text-emerald-500/70 border border-emerald-900/20'
                 : isContributing 
                   ? 'bg-zinc-800 text-zinc-400 cursor-wait border border-white/5'
-                  : 'bg-white text-zinc-900 hover:bg-zinc-100 shadow-[0_4px_24px_rgba(255,255,255,0.08)] hover:shadow-[0_4px_32px_rgba(255,255,255,0.15)] cursor-pointer'
+                  : isZeroHeadroom
+                    ? 'bg-zinc-900 text-zinc-600 border border-white/5 cursor-not-allowed'
+                    : 'bg-white text-zinc-900 hover:bg-zinc-100 shadow-[0_4px_24px_rgba(255,255,255,0.08)] hover:shadow-[0_4px_32px_rgba(255,255,255,0.15)] cursor-pointer'
               }
             `}
           >
@@ -293,8 +322,15 @@ export const GoalCard: React.FC<GoalCardProps> = ({ goal, onContribute, onArchiv
             ) : (
               <>
                 <Plus className="w-4 h-4 text-black" />
-                Contribute ₹1,000
-                <TrendingUp className="w-3.5 h-3.5 text-zinc-500 ml-auto" />
+                <span>
+                  {isZeroHeadroom ? 'Budget Exhausted' : `Contribute ${contributionLabel}`}
+                </span>
+                {isBudgetCapped && !isZeroHeadroom && (
+                  <span className="ml-auto text-[9px] font-black uppercase tracking-wide text-amber-500/80 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full">
+                    budget
+                  </span>
+                )}
+                {!isBudgetCapped && <TrendingUp className="w-3.5 h-3.5 text-zinc-500 ml-auto" />}
               </>
             )}
           </motion.button>

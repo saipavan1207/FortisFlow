@@ -115,26 +115,35 @@ const Dashboard = () => {
         }
     }, [profile]);
 
-    const handleSaveBudget = async (newBudget) => {
-        setMonthlyBudget(newBudget);
+    const handleSaveBudget = async (newBudget, selectedMonthName = new Date().toLocaleString('default', { month: 'long' }), selectedYear = new Date().getFullYear()) => {
+        const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+        const currentYear = new Date().getFullYear();
+        
+        if (selectedMonthName === currentMonthName && selectedYear === currentYear) {
+            setMonthlyBudget(newBudget);
+            if (profile?.id) {
+                localStorage.setItem(`monthlyBudget_${profile.id}`, newBudget.toString());
+            }
+        }
+
         if (profile?.id) {
-            localStorage.setItem(`monthlyBudget_${profile.id}`, newBudget.toString());
             try {
-                // Update profile fallback
-                await supabase.from('profiles').update({ monthly_budget: newBudget }).eq('id', profile.id);
+                // Update profile fallback only if it's the current month and year
+                if (selectedMonthName === currentMonthName && selectedYear === currentYear) {
+                    await supabase.from('profiles').update({ monthly_budget: newBudget }).eq('id', profile.id);
+                }
                 
-                // Update specific monthly budget
-                const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
-                const currentMonth = new Date().getMonth() + 1;
-                const currentYear = new Date().getFullYear();
+                // Map month name to number
+                const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+                const targetMonth = months.indexOf(selectedMonthName) + 1;
 
                 const { data: existingBudgets } = await supabase
                     .from('budgets')
                     .select('id')
                     .eq('user_id', profile.id)
-                    .eq('category', currentMonthName)
-                    .eq('month', currentMonth)
-                    .eq('year', currentYear);
+                    .eq('category', selectedMonthName)
+                    .eq('month', targetMonth)
+                    .eq('year', selectedYear);
 
                 if (existingBudgets && existingBudgets.length > 0) {
                     await supabase
@@ -146,10 +155,10 @@ const Dashboard = () => {
                         .from('budgets')
                         .insert({
                             user_id: profile.id,
-                            category: currentMonthName,
+                            category: selectedMonthName,
                             Budget: newBudget,
-                            month: currentMonth,
-                            year: currentYear
+                            month: targetMonth,
+                            year: selectedYear
                         });
                 }
             } catch (err) {
@@ -248,9 +257,21 @@ const Dashboard = () => {
                                 {/* Popover Tooltip */}
                                 <div className="absolute left-0 top-full mt-2 w-max opacity-0 invisible group-hover/score:opacity-100 group-hover/score:visible transition-all duration-300 z-50">
                                     <div className="bg-[#1a1f2e] border border-white/10 rounded-lg p-3 shadow-xl backdrop-blur-xl">
-                                        <p className="text-sm text-zinc-300 font-medium whitespace-nowrap">
-                                            Savings rate: <span className="text-white font-bold">{financialHealth?.savings_rate_score || 0}/40</span> | Goals: <span className="text-white font-bold">{financialHealth?.goals_progress_score || 0}/30</span> | Budget: <span className="text-white font-bold">{financialHealth?.budget_adherence_score || 0}/30</span>
-                                        </p>
+                                        <p className="text-[11px] text-zinc-400 font-semibold mb-2 uppercase tracking-wider">Score Breakdown</p>
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex items-center justify-between gap-6">
+                                                <span className="text-xs text-zinc-400">💰 Savings Rate</span>
+                                                <span className="text-xs text-white font-bold">{financialHealth?.savings_rate_score ?? 0}<span className="text-zinc-500">/30</span></span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-6">
+                                                <span className="text-xs text-zinc-400">📊 Budget Adherence</span>
+                                                <span className="text-xs text-white font-bold">{financialHealth?.budget_adherence_score ?? 0}<span className="text-zinc-500">/40</span></span>
+                                            </div>
+                                            <div className="flex items-center justify-between gap-6">
+                                                <span className="text-xs text-zinc-400">🎯 Goals Progress</span>
+                                                <span className="text-xs text-white font-bold">{financialHealth?.goals_progress_score ?? 0}<span className="text-zinc-500">/30</span></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +285,7 @@ const Dashboard = () => {
                             {isNoData ? <Activity className="w-3 h-3" /> : (score >= 70 ? <TrendingUp className="w-3 h-3" /> : (score >= 40 ? <Activity className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />))}
                             {healthLabel}
                         </div>
-                        <span className="text-zinc-600 text-xs font-medium">Based on income & goals</span>
+                        <span className="text-zinc-600 text-xs font-medium">Budget · Goals · Savings</span>
                     </div>
                 </motion.div>
 

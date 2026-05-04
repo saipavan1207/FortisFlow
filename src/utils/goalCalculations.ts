@@ -197,47 +197,92 @@ export function computeOverviewStats(goals: GoalRecord[]): GoalsOverviewStats {
 }
 
 /**
- * Generate 6-month forward projection.
- * Adds slight deterministic variance for realism.
+ * Generate 6-month forward projection using per-goal AI-recommended contributions.
+ *
+ * Logic per goal (active only):
+ *   1. Use recommended_monthly_contribution if stored (from AI planner)
+ *   2. Else derive: remaining / months_to_deadline
+ *   3. Stop contributing for a goal once its deadline passes OR it's fully funded
+ *
+ * Starting point = actual current total saved across ALL goals.
+ * No artificial variance — the slope accurately reflects the AI plan.
  */
 export function generateProjection(
   goals: GoalRecord[],
   months: number = 6
 ): ProjectionPoint[] {
   const activeGoals = goals.filter(g => g.status === 'active');
-  const totalSaved = goals.reduce((sum, g) => sum + (Number(g.saved_amount) || 0), 0);
-  const allContributions = activeGoals.flatMap(g => g.contributions || []);
-  const globalAvgDaily = computeAvgDailySaving(allContributions);
-  const avgMonthly = globalAvgDaily * 30;
+
+  // Actual current total saved (start the chart here, not at ₹0)
+  const totalCurrentSaved = goals.reduce((sum, g) => sum + (Number(g.saved_amount) || 0), 0);
+
+  // Pre-compute per-goal plan rates
+  const goalPlans = activeGoals.map(g => {
+    const target    = Number(g.target_amount)  || 0;
+    const saved     = Number(g.saved_amount)   || 0;
+    const remaining = Math.max(target - saved, 0);
+    const deadline  = new Date(g.deadline);
+
+    let monthly: number;
+    if (g.recommended_monthly_contribution && g.recommended_monthly_contribution > 0) {
+      monthly = g.recommended_monthly_contribution;
+    } else {
+      const monthsLeft = Math.max(
+        1,
+        (deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30)
+      );
+      monthly = remaining > 0 ? remaining / monthsLeft : 0;
+    }
+
+    return { monthly, remaining, deadline, currentRemaining: remaining };
+  });
+
+  // Fallback: if no goals have any plan, use historical contribution pace
+  const totalPlanMonthly = goalPlans.reduce((s, g) => s + g.monthly, 0);
+  let fallbackMonthly = 0;
+  if (totalPlanMonthly === 0) {
+    const allContributions = activeGoals.flatMap(g => g.contributions || []);
+    fallbackMonthly = computeAvgDailySaving(allContributions) * 30;
+  }
 
   const points: ProjectionPoint[] = [];
   const today = new Date();
 
-  // Add "Today" as starting point
   points.push({
     month: 'Today',
-    projected: Math.round(totalSaved) || 0,
+    projected: Math.round(totalCurrentSaved),
   });
 
-  let currentProjected = totalSaved;
+  let cumulative = totalCurrentSaved;
+  // Track remaining per goal to stop over-contributing
+  const remainingPerGoal = goalPlans.map(p => p.currentRemaining);
 
   for (let i = 1; i <= months; i++) {
     const futureDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
     const monthLabel = futureDate.toLocaleDateString('en-IN', {
       month: 'short',
-      year: '2-digit'
+      year: '2-digit',
     });
 
-    // Add a deterministic pseudo-random variance between -0.05 and +0.05 to make graph realistic
-    // Uses month index to seed it
-    const varianceFactor = 1 + (Math.sin(i * 12.3) * 0.05);
-    const thisMonthSaving = Math.max(0, avgMonthly * varianceFactor);
-    
-    currentProjected += thisMonthSaving;
+    let monthlyContribution = fallbackMonthly; // used when no goal plans
+
+    if (totalPlanMonthly > 0) {
+      monthlyContribution = 0;
+      goalPlans.forEach((plan, idx) => {
+        // Only contribute if deadline hasn't passed and goal isn't fully funded
+        if (futureDate <= plan.deadline && remainingPerGoal[idx] > 0) {
+          const contribution = Math.min(plan.monthly, remainingPerGoal[idx]);
+          monthlyContribution += contribution;
+          remainingPerGoal[idx] -= contribution;
+        }
+      });
+    }
+
+    cumulative += Math.max(0, monthlyContribution);
 
     points.push({
       month: monthLabel,
-      projected: Math.round(currentProjected) || 0,
+      projected: Math.round(cumulative),
     });
   }
 

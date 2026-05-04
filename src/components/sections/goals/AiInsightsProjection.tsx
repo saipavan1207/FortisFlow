@@ -74,9 +74,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 interface AiInsightsProjectionProps {
     insightText: string;
     projectionData: ProjectionPoint[];
+    totalTarget?: number;
 }
 
-const AiInsightsProjection: React.FC<AiInsightsProjectionProps> = ({ insightText, projectionData }) => {
+const AiInsightsProjection: React.FC<AiInsightsProjectionProps> = ({ insightText, projectionData, totalTarget }) => {
     const [displayedText, setDisplayedText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
 
@@ -98,10 +99,21 @@ const AiInsightsProjection: React.FC<AiInsightsProjectionProps> = ({ insightText
         return () => clearInterval(timer);
     }, [insightText]);
 
+    /* Derived stats from projectionData */
+    const firstPoint  = projectionData[0]?.projected ?? 0;
+    const lastPoint   = projectionData[projectionData.length - 1]?.projected ?? 0;
+    const months      = Math.max(projectionData.length - 1, 1);
+    const monthlyRate = Math.round((lastPoint - firstPoint) / months);
+
     /* Max value for reference line */
     const maxProjected = projectionData.length > 0
         ? Math.max(...projectionData.map(p => p.projected))
         : 0;
+
+    const fmtINR = (v: number) =>
+        v >= 100000 ? `₹${(v / 100000).toFixed(1)}L`
+        : v >= 1000  ? `₹${(v / 1000).toFixed(1)}k`
+        : `₹${v}`;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
@@ -187,7 +199,7 @@ const AiInsightsProjection: React.FC<AiInsightsProjectionProps> = ({ insightText
                                 <h3 className="text-[17px] font-bold text-white tracking-tight">Savings Trajectory</h3>
                             </div>
                             <p className="text-xs text-zinc-500 font-medium">
-                                Projected cumulative savings across all goals
+                                Based on your AI plan recommendations
                             </p>
                         </div>
                         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 rounded-full border border-white/[0.06]">
@@ -196,12 +208,24 @@ const AiInsightsProjection: React.FC<AiInsightsProjectionProps> = ({ insightText
                         </div>
                     </div>
 
-                    {/* Legend */}
-                    <div className="flex items-center gap-4 mb-4 relative z-10">
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-0.5 rounded-full bg-indigo-400" />
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Projected</span>
+                    {/* Stats row */}
+                    <div className="flex items-center gap-4 mb-3 relative z-10 flex-wrap">
+                        <div className="bg-zinc-900/60 border border-white/[0.05] rounded-xl px-3 py-2">
+                            <span className="block text-zinc-600 text-[9px] uppercase font-black tracking-widest">Monthly Plan</span>
+                            <span className="text-sm font-black text-white tabular-nums">
+                                {monthlyRate > 0 ? `+${fmtINR(monthlyRate)}/mo` : '—'}
+                            </span>
                         </div>
+                        <div className="bg-zinc-900/60 border border-white/[0.05] rounded-xl px-3 py-2">
+                            <span className="block text-zinc-600 text-[9px] uppercase font-black tracking-widest">Projected Total</span>
+                            <span className="text-sm font-black text-indigo-400 tabular-nums">{fmtINR(lastPoint)}</span>
+                        </div>
+                        {totalTarget != null && totalTarget > 0 && (
+                            <div className="bg-zinc-900/60 border border-white/[0.05] rounded-xl px-3 py-2">
+                                <span className="block text-zinc-600 text-[9px] uppercase font-black tracking-widest">Goal Target</span>
+                                <span className="text-sm font-black text-emerald-400 tabular-nums">{fmtINR(totalTarget)}</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Chart */}
@@ -254,13 +278,28 @@ const AiInsightsProjection: React.FC<AiInsightsProjectionProps> = ({ insightText
                                         strokeDasharray: '4 4',
                                     }}
                                 />
+                                {/* Target reference line */}
+                                {totalTarget != null && totalTarget > 0 && (
+                                    <ReferenceLine
+                                        y={totalTarget}
+                                        stroke="rgba(52,211,153,0.3)"
+                                        strokeDasharray="6 3"
+                                        label={{
+                                            value: `Target: ${fmtINR(totalTarget)}`,
+                                            position: 'insideTopLeft',
+                                            fill: '#34d399',
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                        }}
+                                    />
+                                )}
                                 {maxProjected > 0 && (
                                     <ReferenceLine
                                         y={maxProjected}
-                                        stroke="rgba(129,140,248,0.2)"
+                                        stroke="rgba(129,140,248,0.15)"
                                         strokeDasharray="4 4"
                                         label={{
-                                            value: `Peak: ₹${(maxProjected / 1000).toFixed(0)}k`,
+                                            value: `Peak: ${fmtINR(maxProjected)}`,
                                             position: 'insideTopRight',
                                             fill: '#6366f1',
                                             fontSize: 10,

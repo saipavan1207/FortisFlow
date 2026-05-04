@@ -12,6 +12,7 @@ interface GoalCardsGridProps {
     onArchive?: (id: string) => void;
     contributingIds: Set<string>;
     showAddCard?: boolean;
+    budgetHeadroom?: number | null;
 }
 
 const AddGoalCard = ({ onAddNew }: { onAddNew: () => void }) => {
@@ -40,7 +41,7 @@ const AddGoalCard = ({ onAddNew }: { onAddNew: () => void }) => {
     );
 };
 
-const GoalCardsGrid: React.FC<GoalCardsGridProps> = ({ goals, onAddNew, onContribute, onArchive, contributingIds, showAddCard = true }) => {
+const GoalCardsGrid: React.FC<GoalCardsGridProps> = ({ goals, onAddNew, onContribute, onArchive, contributingIds, showAddCard = true, budgetHeadroom }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {goals.map((goal, index) => (
@@ -56,6 +57,7 @@ const GoalCardsGrid: React.FC<GoalCardsGridProps> = ({ goals, onAddNew, onContri
                         onContribute={onContribute} 
                         onArchive={onArchive}
                         isContributing={contributingIds.has(goal.id)}
+                        budgetHeadroom={budgetHeadroom}
                     />
                 </motion.div>
             ))}

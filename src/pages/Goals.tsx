@@ -5,6 +5,7 @@ import GoalCardsGrid from '../components/sections/goals/GoalCardsGrid';
 import AiInsightsProjection from '../components/sections/goals/AiInsightsProjection';
 import GoalPlannerModal from '../components/sections/goals/GoalPlannerModal';
 import { useGoalsData } from '../hooks/useGoalsData';
+import { useBudgetHeadroom } from '../hooks/useBudgetHeadroom';
 import { Plus, Sparkles, Target } from 'lucide-react';
 
 const SECTION_VARIANTS = {
@@ -31,6 +32,8 @@ const Goals: React.FC = () => {
         activeGoals,
         completedGoals
     } = useGoalsData();
+
+    const { headroom: budgetHeadroom, refresh: refreshHeadroom } = useBudgetHeadroom();
 
     const handleAddGoal = async (goalData: any) => {
         await addGoal(goalData);
@@ -169,6 +172,7 @@ const Goals: React.FC = () => {
                         onArchive={archiveGoal}
                         contributingIds={contributingIds}
                         showAddCard={activeTab === 'active'}
+                        budgetHeadroom={budgetHeadroom}
                     />
                 </motion.div>
             </motion.section>
@@ -188,6 +192,7 @@ const Goals: React.FC = () => {
                 <AiInsightsProjection
                     insightText={aiGuidance || "Analyzing your savings trajectory..."}
                     projectionData={projections}
+                    totalTarget={overviewStats.totalTarget}
                 />
             </motion.section>
 

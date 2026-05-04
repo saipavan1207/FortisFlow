@@ -33,7 +33,7 @@ export const useDashboardData = () => {
             ] = await Promise.all([
                 supabase.from('profiles').select('*').eq('id', user.id).single(),
                 supabase.from('budgets').select('*').eq('user_id', user.id),
-                supabase.from('goals').select('*').eq('user_id', user.id).eq('status', 'active'),
+                supabase.from('goals').select('*').eq('user_id', user.id),
             ]);
 
             // Set fetched data
@@ -73,7 +73,7 @@ export const useDashboardData = () => {
         const EMPTY = {
             spendingStats: { totalSpend: 0, monthlySpend: 0, dailyAverage: 0 },
             categoryBreakdown: [],
-            financialHealth: { score: null },
+            financialHealth: { score: null, savings_rate_score: 0, goals_progress_score: 0, budget_adherence_score: 0 },
             monthlyStatsData: [],
             expenseTrend: { value: 0, uiLabel: 'No data', trend: 'neutral' },
             budgetsVsActual: [],
@@ -102,6 +102,7 @@ export const useDashboardData = () => {
 
         const categoryTotals = {};
         const monthlyStatsMap = {};
+        const monthlyExpenseMap = {}; // YYYY-MM → total expense (all time, for budget adherence)
 
         let currentTotalExpense = 0;  // last 30 days
         let prevTotalExpense = 0;     // prior 30 days
@@ -122,6 +123,12 @@ export const useDashboardData = () => {
             if (txn.type === 'income') monthlyStatsMap[monthKey].income += amount;
             if (txn.type === 'expense') monthlyStatsMap[monthKey].expense += amount;
 
+            // Per-month expense totals for budget adherence
+            if (txn.type === 'expense') {
+                if (!monthlyExpenseMap[monthKey]) monthlyExpenseMap[monthKey] = 0;
+                monthlyExpenseMap[monthKey] += amount;
+            }
+
             // Period-based windows
             if (txn.type === 'expense') {
                 if (txnDate >= last30Start) {
@@ -133,16 +140,54 @@ export const useDashboardData = () => {
             }
         });
 
-        // Financial Health Score
-        let score = null;
-        if (totalIncomeAllTime === 0 && totalExpenseAllTime === 0) {
-            score = null; // "No data"
-        } else {
-            const savings = totalIncomeAllTime - totalExpenseAllTime;
-            score = totalIncomeAllTime > 0
-                ? Math.max(0, Math.min(100, (savings / totalIncomeAllTime) * 100))
-                : 0;
+        // ── 3-PILLAR FINANCIAL HEALTH SCORE ───────────────────────────────────
+
+        // PILLAR 1 — Savings Rate (30 pts max)
+        // % of income saved. 30%+ savings = full 30 pts.
+        let savingsRateScore = 0;
+        if (totalIncomeAllTime > 0) {
+            const rate = Math.max(0, (totalIncomeAllTime - totalExpenseAllTime) / totalIncomeAllTime);
+            savingsRateScore = Math.min(30, Math.round(rate * 100)); // 1pt per 1% saved, cap at 30
         }
+
+        // PILLAR 2 — Budget Adherence (40 pts max)
+        // For each month where user set a budget, check if actual expense ≤ budget.
+        // Score = (months within budget / total budgeted months) * 40
+        let budgetAdherenceScore = 0;
+        const validBudgets = budgets.filter(b => {
+            const limit = parseFloat(b.Budget ?? b.amount ?? 0);
+            return limit > 0 && b.month && b.year;
+        });
+        if (validBudgets.length > 0) {
+            let monthsWithin = 0;
+            validBudgets.forEach(b => {
+                const limit = parseFloat(b.Budget ?? b.amount ?? 0);
+                const key = `${b.year}-${String(b.month).padStart(2, '0')}`;
+                const actual = monthlyExpenseMap[key] || 0;
+                if (actual <= limit) monthsWithin++;
+            });
+            budgetAdherenceScore = Math.round((monthsWithin / validBudgets.length) * 40);
+        } else {
+            // No budgets set — give partial credit if saving positively
+            budgetAdherenceScore = totalIncomeAllTime > totalExpenseAllTime ? 20 : 0;
+        }
+
+        // PILLAR 3 — Goals Progress (30 pts max)
+        // Completed goals = full weight; active goals = proportional (saved/target).
+        let goalsProgressScore = 0;
+        if (goalPredictions.length > 0) {
+            let totalWeight = 0, achievedWeight = 0;
+            goalPredictions.forEach(g => {
+                const target = parseFloat(g.target_amount) || 0;
+                const saved = parseFloat(g.saved_amount) || 0;
+                totalWeight += 1;
+                achievedWeight += g.status === 'completed' ? 1 : (target > 0 ? Math.min(saved / target, 1) : 0);
+            });
+            goalsProgressScore = totalWeight > 0 ? Math.round((achievedWeight / totalWeight) * 30) : 0;
+        }
+
+        const rawScore = savingsRateScore + budgetAdherenceScore + goalsProgressScore;
+        const score = (totalIncomeAllTime === 0 && totalExpenseAllTime === 0) ? null : Math.max(0, Math.min(100, rawScore));
 
         // Category breakdown (last 30 days expenses, sorted desc)
         const categoryBreakdown = Object.entries(categoryTotals)
@@ -174,12 +219,12 @@ export const useDashboardData = () => {
                 dailyAverage: currentTotalExpense / 30,
             },
             categoryBreakdown,
-            financialHealth: { score },
+            financialHealth: { score, savings_rate_score: savingsRateScore, goals_progress_score: goalsProgressScore, budget_adherence_score: budgetAdherenceScore },
             monthlyStatsData,
             expenseTrend,
             budgetsVsActual,
         };
-    }, [transactions, budgets]);
+    }, [transactions, budgets, goalPredictions]);
 
     // ── AI Insight (debounced, only fires when real data exists) ─────────────
     useEffect(() => {

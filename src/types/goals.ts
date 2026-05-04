@@ -17,6 +17,7 @@ export interface GoalRecord {
   deadline: string;         // ISO date
   status: 'active' | 'completed' | 'paused' | 'archived';
   priority: number;
+  recommended_monthly_contribution?: number | null;
   created_at: string;
   completed_at?: string;
   contributions: GoalContribution[];

@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Wallet } from 'lucide-react';
+import { X, Wallet, ChevronDown } from 'lucide-react';
 
 const BudgetModal = ({ isOpen, onClose, currentBudget, onSave }) => {
     const [value, setValue] = useState('');
     const [error, setError] = useState('');
+    const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [isMonthOpen, setIsMonthOpen] = useState(false);
+    const [isYearOpen, setIsYearOpen] = useState(false);
     const inputRef = useRef(null);
     const overlayRef = useRef(null);
+
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const years = Array.from({length: 10}, (_, i) => new Date().getFullYear() - 2 + i);
 
     const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
     const [prevBudget, setPrevBudget] = useState(currentBudget);
@@ -56,7 +63,7 @@ const BudgetModal = ({ isOpen, onClose, currentBudget, onSave }) => {
             setError('Please enter a valid budget amount greater than ₹0');
             return;
         }
-        onSave(parsed);
+        onSave(parsed, selectedMonth, selectedYear);
         onClose();
     };
 
@@ -109,36 +116,108 @@ const BudgetModal = ({ isOpen, onClose, currentBudget, onSave }) => {
                             </p>
 
                             {/* Input Field */}
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    Budget Amount
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-lg select-none">₹</span>
-                                    <input
-                                        ref={inputRef}
-                                        type="number"
-                                        min="1"
-                                        step="100"
-                                        value={value}
-                                        onChange={(e) => {
-                                            setValue(e.target.value);
-                                            if (error) setError('');
-                                        }}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
-                                        className="w-full bg-zinc-900/70 border border-white/10 rounded-xl pl-10 pr-4 py-3.5 text-white text-lg font-semibold focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-600"
-                                        placeholder="14,500"
-                                    />
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5 relative">
+                                        <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                            Month
+                                        </label>
+                                        <div 
+                                            onClick={() => { setIsMonthOpen(!isMonthOpen); setIsYearOpen(false); }}
+                                            className="w-full bg-zinc-900/70 border border-white/10 rounded-xl px-4 py-3 text-white text-base font-semibold focus:ring-2 focus:ring-blue-500/50 outline-none transition-all cursor-pointer flex items-center justify-between"
+                                        >
+                                            <span>{selectedMonth}</span>
+                                            <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${isMonthOpen ? 'rotate-180' : ''}`} />
+                                        </div>
+                                        <AnimatePresence>
+                                            {isMonthOpen && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                                    transition={{ duration: 0.15 }}
+                                                    className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-white/10 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto custom-scrollbar p-1"
+                                                >
+                                                    {months.map(m => (
+                                                        <div 
+                                                            key={m} 
+                                                            onClick={() => { setSelectedMonth(m); setIsMonthOpen(false); }}
+                                                            className={`px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors ${selectedMonth === m ? 'bg-blue-500/20 text-blue-400' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}
+                                                        >
+                                                            {m}
+                                                        </div>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    <div className="space-y-1.5 relative">
+                                        <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                            Year
+                                        </label>
+                                        <div 
+                                            onClick={() => { setIsYearOpen(!isYearOpen); setIsMonthOpen(false); }}
+                                            className="w-full bg-zinc-900/70 border border-white/10 rounded-xl px-4 py-3 text-white text-base font-semibold focus:ring-2 focus:ring-blue-500/50 outline-none transition-all cursor-pointer flex items-center justify-between"
+                                        >
+                                            <span>{selectedYear}</span>
+                                            <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${isYearOpen ? 'rotate-180' : ''}`} />
+                                        </div>
+                                        <AnimatePresence>
+                                            {isYearOpen && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                    exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                                    transition={{ duration: 0.15 }}
+                                                    className="absolute top-full left-0 right-0 mt-1.5 bg-zinc-900 border border-white/10 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto custom-scrollbar p-1"
+                                                >
+                                                    {years.map(y => (
+                                                        <div 
+                                                            key={y} 
+                                                            onClick={() => { setSelectedYear(y); setIsYearOpen(false); }}
+                                                            className={`px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors ${selectedYear === y ? 'bg-blue-500/20 text-blue-400' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}
+                                                        >
+                                                            {y}
+                                                        </div>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 </div>
-                                {error && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -4 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-rose-400 text-xs font-medium mt-1"
-                                    >
-                                        {error}
-                                    </motion.p>
-                                )}
+
+                                <div className="space-y-1.5">
+                                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                        Budget Amount
+                                    </label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-lg select-none">₹</span>
+                                        <input
+                                            ref={inputRef}
+                                            type="number"
+                                            min="1"
+                                            step="100"
+                                            value={value}
+                                            onChange={(e) => {
+                                                setValue(e.target.value);
+                                                if (error) setError('');
+                                            }}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+                                            className="w-full bg-zinc-900/70 border border-white/10 rounded-xl pl-10 pr-4 py-3.5 text-white text-lg font-semibold focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            placeholder="14,500"
+                                        />
+                                    </div>
+                                    {error && (
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-rose-400 text-xs font-medium mt-1"
+                                        >
+                                            {error}
+                                        </motion.p>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Quick Presets */}

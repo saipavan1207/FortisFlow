@@ -18,6 +18,7 @@ export async function createGoal(userId: string, goal: {
   icon: string;
   color_preset: string;
   priority?: number;
+  recommended_monthly_contribution?: number | null;
 }): Promise<GoalRecord> {
   const { data, error } = await supabase
     .from('goals')
@@ -26,11 +27,12 @@ export async function createGoal(userId: string, goal: {
       title: goal.title,
       target_amount: goal.target_amount,
       deadline: goal.deadline,
-      icon: goal.icon || 'star', // fallback
+      icon: goal.icon || 'star',
       color_preset: goal.color_preset || 'blue',
       priority: goal.priority ?? 3,
       status: 'active',
       saved_amount: 0,
+      recommended_monthly_contribution: goal.recommended_monthly_contribution ?? null,
     })
     .select()
     .single();
